@@ -1734,6 +1734,8 @@ from bpy.props import BoolProperty, EnumProperty, FloatProperty, FloatVectorProp
 
 interaction_keymaps = []
 
+_random_color_used = {}
+
 
 def interaction_redraw(context):
     for window in context.window_manager.windows:
@@ -1988,7 +1990,22 @@ def interaction_new_color(context,links):
     if mode == 'WIRES':
         colors = [sockets_color(l,context) for l in links]
         return max(colors,key=colors.count)
-    return random.choice([(.9,.28,.3,1),(.25,.4,.86,1),(.27,.65,.35,1),(.99,.77,.24,1),(.56,.3,.78,1)])
+    palette = [
+        (.9,.28,.3,1),(.25,.4,.86,1),(.27,.65,.35,1),(.99,.77,.24,1),(.56,.3,.78,1),
+        (.1,.7,.7,1),(.9,.5,.1,1),(.4,.2,.6,1),(.2,.8,.5,1),(.8,.2,.6,1),
+        (.15,.35,.75,1),(.75,.2,.45,1),
+    ]
+    tree = rendering_tree_of(context)
+    key = tree.as_pointer() if tree is not None else 0
+    used = _random_color_used.get(key, set())
+    available = [i for i in range(len(palette)) if i not in used]
+    if not available:
+        used = set()
+        available = list(range(len(palette)))
+    idx = random.choice(available)
+    used.add(idx)
+    _random_color_used[key] = used
+    return palette[idx]
 
 
 class interaction_NodeOperator:
