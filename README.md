@@ -25,6 +25,22 @@ TieRZ is a Blender add-on that organizes node links with movable cable ties (rer
 - **Right-click menu** (on a selected tie): Rotate (R) / Spacing (S) / Name (N) / Color (C) / Remove (X).
 - **N panel**: edit selected tie name, color, spacing, design, and appearance.
 - **Match sizes**: `Alt+S` to unify selected tie sizes.
+- **Move selected**: `G` to move selected nodes and ties together.
+- **Remove**: `X` (ties only) / `Del` or `Backspace` (ties and nodes).
+
+### Keys
+
+| Key | Action |
+|---|---|
+| `Z` (hold) + drag | Create a tie across wires |
+| `R` | Rotate selected ties |
+| `S` | Adjust spacing |
+| `N` | Name the selected tie |
+| `C` | Change color |
+| `X` | Remove selected ties |
+| `Alt+S` | Match sizes |
+| `G` | Move selected nodes and ties |
+| `Del` / `Backspace` | Remove selected ties and nodes |
 
 ## Warnings
 
@@ -32,6 +48,10 @@ TieRZ is a Blender add-on that organizes node links with movable cable ties (rer
 - **Collapsed nodes**: drawing near collapsed (hidden) nodes may be ignored to avoid incorrect selections.
 - **Read-only trees**: cleanup stops on read-only node trees.
 - **Keymap conflicts**: the add-on registers shortcuts in the Node Editor keymap. If shortcuts do not work, check `Preferences > Keymap` for stale `tie.rz_*` entries.
+
+## Background
+
+The idea started as a prototype in a game engine, then moved to ComfyUI, and finally landed in Blender as NODE ZIP TIE. This add-on builds on that lineage. It is a free add-on; no grand claims intended.
 
 ## Credits
 
