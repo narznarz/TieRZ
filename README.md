@@ -10,6 +10,7 @@ TieRZ is a Blender add-on that organizes node links with movable cable ties (rer
 - Rotate, space, name, color, and remove ties from the right-click menu.
 - Ties are designed to feel like native Blender controls, so they are easy to handle.
 - Clean uninstall: removes control data so nothing is left behind.
+- Multilingual interface: English and Korean (more languages can be added via `i18n/*.json`).
 
 ## Installation
 
