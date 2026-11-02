@@ -1362,8 +1362,15 @@ def rendering_draw_tie(tie,spacing,width,transform,border,active,style='ORIGINAL
         vertices = [transform(geometry_add(tie['pos'],geometry_add(geometry_mul(tangent,x),geometry_mul(normal,y))))
                     for x,y in local]
         rendering_draw_image_quad(rendering__macho_texture(rendering_music_note_name(tie)),vertices)
-        outline = [vertices[0],vertices[1],vertices[3],vertices[2],vertices[0]]
-        rendering_line(outline,border,2.5 if active else 0.8)
+        poly = [vertices[0],vertices[1],vertices[3],vertices[2]]
+        is_cut = (border[0] > 0.5 and border[1] < 0.2)
+        if active or is_cut:
+            gpu.state.blend_set('ADD')
+            if is_cut:
+                rendering_polygon(poly,(0.9,0.1,0.1,0.4))
+            else:
+                rendering_polygon(poly,(1,1,1,0.35))
+            gpu.state.blend_set('ALPHA')
         return
     if style == 'MACHOCAT':
         h = geometry_half_length(tie,spacing)
