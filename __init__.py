@@ -17,6 +17,7 @@ import json
 import os
 
 import bpy
+from bpy.app.handlers import persistent
 
 
 i18n_DOMAIN = "TieRZ"
@@ -3053,18 +3054,59 @@ def ui__addon_version():
 ui__icon_collections = {}
 
 
-def ui_register_icons():
+def ui_register_icons(force=False):
+    if force and 'main' in ui__icon_collections:
+        try:
+            bpy.utils.previews.remove(ui__icon_collections.pop('main'))
+        except Exception:
+            ui__icon_collections.pop('main', None)
     if 'main' in ui__icon_collections:
-        return
+        collection = ui__icon_collections['main']
+        preview = collection.get('TieRZ_machocat_tab')
+        if preview is not None and getattr(preview, 'icon_id', 0):
+            TRZ_PT_panel.bl_icon_value = preview.icon_id
+            TRZ_PT_panel.bl_icon = ''
+            return
+        try:
+            bpy.utils.previews.remove(collection)
+        except Exception:
+            pass
+        ui__icon_collections.pop('main', None)
+
     collection = bpy.utils.previews.new()
     icon_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'assets', '1_macho_hoe.png')
     if os.path.isfile(icon_path):
-        preview = collection.load('TieRZ_machocat_tab', icon_path, 'IMAGE')
-        TRZ_PT_panel.bl_icon_value = preview.icon_id
-        ui__icon_collections['main'] = collection
+        loaded = False
+        for _ in range(2):
+            try:
+                preview = collection.load('TieRZ_machocat_tab', icon_path, 'IMAGE')
+            except Exception as exc:
+                print(f"[TieRZ] MachoCAT tab icon load failed: {exc}")
+                preview = None
+            if preview is not None and getattr(preview, 'icon_id', 0):
+                TRZ_PT_panel.bl_icon_value = preview.icon_id
+                TRZ_PT_panel.bl_icon = ''
+                ui__icon_collections['main'] = collection
+                loaded = True
+                break
+            try:
+                bpy.utils.previews.remove(collection)
+            except Exception:
+                pass
+            collection = bpy.utils.previews.new()
+        if not loaded:
+            print("[TieRZ] MachoCAT tab icon could not be loaded; using built-in fallback")
     else:
-        bpy.utils.previews.remove(collection)
         print(f"[TieRZ] MachoCAT tab icon not found: {icon_path}")
+        try:
+            bpy.utils.previews.remove(collection)
+        except Exception:
+            pass
+
+    if 'main' not in ui__icon_collections:
+        ui__icon_collections.pop('main', None)
+        TRZ_PT_panel.bl_icon_value = 0
+        TRZ_PT_panel.bl_icon = 'SNAP_MIDPOINT'
 
 
 def ui_sync_panel_state(context,tree,ties):
@@ -3089,9 +3131,30 @@ def ui_sync_panel_state(context,tree,ties):
         panel.panel_syncing = False
 
 
+@persistent
+def ui__refresh_panel_icon(*_):
+    try:
+        ui_register_icons(force=True)
+    except Exception as exc:
+        print(f"[TieRZ] icon refresh failed: {exc}")
+
+
+def ui__ensure_icon_handler():
+    if ui__refresh_panel_icon not in bpy.app.handlers.load_post:
+        bpy.app.handlers.load_post.append(ui__refresh_panel_icon)
+
+
 def ui_unregister_icons():
-    for collection in ui__icon_collections.values():
-        bpy.utils.previews.remove(collection)
+    if ui__refresh_panel_icon in bpy.app.handlers.load_post:
+        try:
+            bpy.app.handlers.load_post.remove(ui__refresh_panel_icon)
+        except ValueError:
+            pass
+    for collection in list(ui__icon_collections.values()):
+        try:
+            bpy.utils.previews.remove(collection)
+        except Exception:
+            pass
     ui__icon_collections.clear()
 
 
@@ -3296,6 +3359,7 @@ def __init___load_routes(*_):
 
 def register():
     ui_register_icons()
+    ui__ensure_icon_handler()
     for cls in __init___classes:
         cls.bl_translation_context = i18n_DOMAIN
         bpy.utils.register_class(cls)

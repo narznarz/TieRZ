@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.18.24 (2026-11-02)
+
+### Fixed
+- **Custom tab icon not showing intermittently**: `bpy.utils.previews` collection could be
+  invalidated on `.blend` file load, leaving the N-panel tab with a stale/blank icon.
+  - Icon is now re-applied on every `load_post` (refresh with a fresh collection).
+  - Load result is validated (`icon_id != 0`); on failure the addon retries once with a
+    fresh collection, then falls back to the built-in `SNAP_MIDPOINT` icon so the tab
+    always has an icon instead of going blank.
+  - Built-in fallback is used automatically in headless/background mode where preview
+    icon generation is unavailable.
+
 ## 0.18.23 (2026-11-02)
 
 ### Fixed
