@@ -639,7 +639,10 @@ def sockets_socket_position(node, socket):
 def sockets_controls(link, context):
     a = sockets_socket_position(link.from_node, link.from_socket)
     b = sockets_socket_position(link.to_node, link.to_socket)
-    curve = context.preferences.themes[0].node_editor.noodle_curving
+    try:
+        curve = getattr(context.preferences.themes[0].node_editor, 'noodle_curving', 4)
+    except (AttributeError, IndexError, KeyError):
+        curve = 4
     dx, dy = abs(b[0]-a[0]), abs(b[1]-a[1])
     offset = curve*.1*dx*min(1,dy/dx*(4.5-.25*curve)) if dx else 0
     if not curve:
