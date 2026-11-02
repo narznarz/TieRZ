@@ -1362,6 +1362,8 @@ def rendering_draw_tie(tie,spacing,width,transform,border,active,style='ORIGINAL
         vertices = [transform(geometry_add(tie['pos'],geometry_add(geometry_mul(tangent,x),geometry_mul(normal,y))))
                     for x,y in local]
         rendering_draw_image_quad(rendering__macho_texture(rendering_music_note_name(tie)),vertices)
+        outline = [vertices[0],vertices[1],vertices[3],vertices[2],vertices[0]]
+        rendering_line(outline,border,2.5 if active else 0.8)
         return
     if style == 'MACHOCAT':
         h = geometry_half_length(tie,spacing)
