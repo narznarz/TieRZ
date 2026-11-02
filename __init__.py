@@ -3067,7 +3067,7 @@ def ui_register_icons(force=False):
         preview = collection.get('TieRZ_machocat_tab')
         if preview is not None and getattr(preview, 'icon_id', 0):
             TRZ_PT_panel.bl_icon_value = preview.icon_id
-            TRZ_PT_panel.bl_icon = ''
+            TRZ_PT_panel.bl_icon = 'NONE'
             return
         try:
             bpy.utils.previews.remove(collection)
@@ -3087,7 +3087,7 @@ def ui_register_icons(force=False):
                 preview = None
             if preview is not None and getattr(preview, 'icon_id', 0):
                 TRZ_PT_panel.bl_icon_value = preview.icon_id
-                TRZ_PT_panel.bl_icon = ''
+                TRZ_PT_panel.bl_icon = 'NONE'
                 ui__icon_collections['main'] = collection
                 loaded = True
                 break
