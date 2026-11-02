@@ -1,0 +1,27 @@
+# Changelog
+
+## 0.18.23 (2026-11-02)
+
+### Fixed
+- **Blender 5.4 alpha compatibility**: `TRZ_OT_color` failed to register because
+  `Operator` no longer accepts `PointerProperty(type=bpy.types.NodeTree)` ("this type
+  doesn't support data-block properties"). The node tree is now stored by name
+  (`StringProperty`) and resolved from `bpy.data.node_groups` at execute time.
+- **Blender 5.4 alpha compatibility**: modal link hit-testing crashed with
+  `AttributeError: 'ThemeNodeEditor' object has no attribute 'noodle_curving'` on
+  builds/themes where that property was removed. Now falls back to the default value (4).
+- **Color picker out-of-range values**: tie colors are stored/rendered as sRGB but
+  `FloatVectorProperty(subtype='COLOR')` expects scene-linear. Conversion is now
+  applied at the picker boundary only, so stored/rendered colors are unchanged while
+  the picker no longer shows values above 1.0 (e.g. Value 1.079, Saturation 1.784).
+  Out-of-range stored colors are clamped to 0..1 instead of dropping the tie.
+- **Random color palette**: 16-colour DawnBringer 16 (DB16) palette, no repeats
+  within a single node tree until all 16 are used.
+
+### Compatibility
+- Verified working on **Blender 5.2**, **5.3 beta**, and **5.4 alpha**.
+- Minimum supported Blender version: 5.2.0.
+
+### Notes
+- Only the latest working release (0.18.23) is published. Earlier intermediate
+  releases have been withdrawn.
