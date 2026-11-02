@@ -1362,15 +1362,15 @@ def rendering_draw_tie(tie,spacing,width,transform,border,active,style='ORIGINAL
         vertices = [transform(geometry_add(tie['pos'],geometry_add(geometry_mul(tangent,x),geometry_mul(normal,y))))
                     for x,y in local]
         rendering_draw_image_quad(rendering__macho_texture(rendering_music_note_name(tie)),vertices)
-        poly = [vertices[0],vertices[1],vertices[3],vertices[2]]
-        is_cut = (border[0] > 0.5 and border[1] < 0.2)
-        if active or is_cut:
-            gpu.state.blend_set('ADD')
-            if is_cut:
-                rendering_polygon(poly,(0.9,0.1,0.1,0.4))
-            else:
-                rendering_polygon(poly,(1,1,1,0.35))
-            gpu.state.blend_set('ALPHA')
+        if active or (border[0] > 0.5 and border[1] < 0.2):
+            cx, cy = transform(tie['pos'])
+            radius = 10.0
+            segments = 24
+            circle = []
+            for i in range(segments + 1):
+                angle = 2 * math.pi * i / segments
+                circle.append((cx + radius * math.cos(angle), cy + radius * math.sin(angle)))
+            rendering_line(circle, border, 2.0 if active else 1.5)
         return
     if style == 'MACHOCAT':
         h = geometry_half_length(tie,spacing)
@@ -1494,15 +1494,24 @@ def rendering_draw():
     gpu.state.blend_set('ALPHA')
     try:
         for tie in ties:
-            if rendering_tie_occluded(tree,tie,context):
+            try:
+                if rendering_tie_occluded(tree,tie,context):
+                    continue
+                active = tie['id'] in selection_of(tree) or tie['id'] == selection_hovered.get(context.area.as_pointer())
+                border = (1,.1,.1,1) if tie['id'] in cuts else (1,1,1,1) if active else (.05,.05,.05,1)
+                rendering_draw_tie(tie,options.spacing,options.width,transform,border,active,options.tie_style)
+            except Exception as exc:
+                _sid = str(tie.get("id", ""))[:6]
+                rendering_last_error = type(exc).__name__ + ": " + str(exc) + " (" + _sid + ")"
                 continue
-            active = tie['id'] in selection_of(tree) or tie['id'] == selection_hovered.get(context.area.as_pointer())
-            border = (1,.1,.1,1) if tie['id'] in cuts else (1,1,1,1) if active else (.05,.05,.05,1)
-            rendering_draw_tie(tie,options.spacing,options.width,transform,border,active,options.tie_style)
         if options.show_names:
             for tie in ties:
-                if not rendering_tie_occluded(tree,tie,context):
-                    rendering_draw_name(context,tie,options,transform)
+                try:
+                    if not rendering_tie_occluded(tree,tie,context):
+                        rendering_draw_name(context,tie,options,transform)
+                except Exception as exc:
+                    rendering_last_error = f'{type(exc).__name__}: {exc}'
+                    continue
         if stroke:
             rendering_line([transform(stroke[0]),transform(stroke[1])],(1,.1,.1,1) if cuts else (1,1,1,1))
         box = selection_boxes.get(context.area.as_pointer())
