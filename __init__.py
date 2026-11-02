@@ -160,6 +160,24 @@ data_KEY = '_TieRZ_v1'
 data_NODE_ID = '_TieRZ_uuid'
 
 
+def data_color_srgb_to_linear(color):
+    """Tie colors are stored/rendered as display sRGB; COLOR properties are scene-linear."""
+    def channel(value):
+        value = max(0.0, min(1.0, float(value)))
+        return value / 12.92 if value <= 0.04045 else ((value + 0.055) / 1.055) ** 2.4
+    return (channel(color[0]), channel(color[1]), channel(color[2]),
+            max(0.0, min(1.0, float(color[3]))))
+
+
+def data_color_linear_to_srgb(color):
+    """Convert a scene-linear COLOR property back to the display sRGB tie color."""
+    def channel(value):
+        value = max(0.0, min(1.0, float(value)))
+        return value * 12.92 if value <= 0.0031308 else 1.055 * value ** (1.0 / 2.4) - 0.055
+    return (channel(color[0]), channel(color[1]), channel(color[2]),
+            max(0.0, min(1.0, float(color[3]))))
+
+
 def data_uid(node, create=False):
     value = node.get(data_NODE_ID, '')
     if not value and create:
@@ -196,9 +214,10 @@ def data_read(tree):
                 not all(isinstance(k, str) for k in t['members'])):
                 continue
             color = t.get('color', [.55,.55,.58,1])
-            if len(color) != 4 or not all(isinstance(v,(int,float)) and math.isfinite(v) and 0<=v<=1 for v in color):
-                continue
-            t['color'] = color
+            if (not isinstance(color,(list,tuple)) or len(color) != 4 or
+                    not all(isinstance(v,(int,float)) and math.isfinite(v) for v in color)):
+                color = [.55,.55,.58,1]
+            t['color'] = [max(0.0, min(1.0, float(v))) for v in color]
             if 'name' in t:
                 if isinstance(t['name'],str):
                     t['name'] = ' '.join(t['name'].split())[:128]
@@ -1585,7 +1604,7 @@ def preferences_update_selected_visual(self,context,field):
             else:
                 tie.pop('name',None)
         else:
-            tie['color'] = list(self.selected_tie_color)
+            tie['color'] = list(data_color_linear_to_srgb(self.selected_tie_color))
     tree[data_KEY] = json.dumps({'version':1,'ties':ties},separators=(',',':'),allow_nan=False)
     for window in context.window_manager.windows:
         for area in window.screen.areas:
@@ -2527,7 +2546,7 @@ class TRZ_OT_color(interaction_NodeOperator,bpy.types.Operator):
     def invoke(self,context,event):
         tree = rendering_tree_of(context)
         self.tree = tree
-        self.color = next(t['color'] for t in data_read(tree) if t['id'] in selection_of(tree))
+        self.color = data_color_srgb_to_linear(next(t['color'] for t in data_read(tree) if t['id'] in selection_of(tree)))
         return context.window_manager.invoke_props_dialog(self,width=190)
 
     def draw(self,context):
@@ -2541,7 +2560,7 @@ class TRZ_OT_color(interaction_NodeOperator,bpy.types.Operator):
         ties = data_read(tree)
         for tie in ties:
             if tie['id'] in selection_of(tree):
-                tie['color'] = list(self.color)
+                tie['color'] = list(data_color_linear_to_srgb(self.color))
         data_write(tree,ties)
         interaction_redraw(context)
         return {'FINISHED'}
@@ -3055,7 +3074,7 @@ def ui_sync_panel_state(context,tree,ties):
         panel.panel_syncing = True
         panel.selected_tie_name = name
         if selection_changed:
-            panel.selected_tie_color = color
+            panel.selected_tie_color = data_color_srgb_to_linear(color)
         panel.selected_tie_spacing = spacing
         panel.panel_syncing = False
 
