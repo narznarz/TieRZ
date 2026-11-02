@@ -1362,7 +1362,7 @@ def rendering_draw_tie(tie,spacing,width,transform,border,active,style='ORIGINAL
         vertices = [transform(geometry_add(tie['pos'],geometry_add(geometry_mul(tangent,x),geometry_mul(normal,y))))
                     for x,y in local]
         rendering_draw_image_quad(rendering__macho_texture(rendering_music_note_name(tie)),vertices)
-        if active or (border[0] > 0.5 and border[1] < 0.2):
+        if active:
             cx, cy = transform(tie['pos'])
             radius = 10.0
             segments = 24
@@ -1370,7 +1370,8 @@ def rendering_draw_tie(tie,spacing,width,transform,border,active,style='ORIGINAL
             for i in range(segments + 1):
                 angle = 2 * math.pi * i / segments
                 circle.append((cx + radius * math.cos(angle), cy + radius * math.sin(angle)))
-            rendering_line(circle, border, 2.0 if active else 1.5)
+            rendering_polygon(circle[:-1], (0,0,0,1))
+            rendering_line(circle, border, 2.0)
         return
     if style == 'MACHOCAT':
         h = geometry_half_length(tie,spacing)
