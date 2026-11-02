@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.18.26 (2026-11-02)
+
+### Fixed
+- **Panel validation error**: `bl_icon = ''` is not a valid icon enum value, causing
+  "validating class: enum '' not found" on registration. Use `'NONE'` when the custom
+  icon is active (and `'SNAP_MIDPOINT'` as the fallback).
+
 ## 0.18.24 (2026-11-02)
 
 ### Fixed
