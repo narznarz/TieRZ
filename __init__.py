@@ -2535,7 +2535,9 @@ class TRZ_OT_color(interaction_NodeOperator,bpy.types.Operator):
     bl_description = 'Change the color of the selected ties'
     bl_options = {'REGISTER','UNDO'}
     color: FloatVectorProperty(name='Color',subtype='COLOR',size=4,min=0,max=1,default=(.55,.55,.58,1))
-    tree: PointerProperty(type=bpy.types.NodeTree, options={'HIDDEN'})
+    # Store the tree by name: a NodeTree PointerProperty on an Operator fails to
+    # register on newer Blender builds ("type doesn't support data-block properties").
+    tree_name: StringProperty(options={'HIDDEN'})
 
     @classmethod
     def poll(cls,context):
@@ -2545,7 +2547,7 @@ class TRZ_OT_color(interaction_NodeOperator,bpy.types.Operator):
 
     def invoke(self,context,event):
         tree = rendering_tree_of(context)
-        self.tree = tree
+        self.tree_name = tree.name if tree else ''
         self.color = data_color_srgb_to_linear(next(t['color'] for t in data_read(tree) if t['id'] in selection_of(tree)))
         return context.window_manager.invoke_props_dialog(self,width=190)
 
@@ -2554,7 +2556,8 @@ class TRZ_OT_color(interaction_NodeOperator,bpy.types.Operator):
         self.layout.prop(self,'color',text='')
 
     def execute(self,context):
-        tree = self.tree or rendering_tree_of(context)
+        tree = bpy.data.node_groups.get(self.tree_name) if self.tree_name else None
+        tree = tree or rendering_tree_of(context)
         if not tree or not tree.is_editable:
             return {'CANCELLED'}
         ties = data_read(tree)
