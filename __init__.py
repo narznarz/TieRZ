@@ -2009,10 +2009,14 @@ def interaction_new_color(context,links):
     if mode == 'WIRES':
         colors = [sockets_color(l,context) for l in links]
         return max(colors,key=colors.count)
+    # DawnBringer 16 (DB16) — the classic 16-colour pixel-art palette.
+    # The darkest entries are lifted to HSL lightness 0.30 so the tie
+    # stays visible against the dark node editor background.
     palette = [
-        (.9,.28,.3,1),(.25,.4,.86,1),(.27,.65,.35,1),(.99,.77,.24,1),(.56,.3,.78,1),
-        (.1,.7,.7,1),(.9,.5,.1,1),(.4,.2,.6,1),(.2,.8,.5,1),(.8,.2,.6,1),
-        (.15,.35,.75,1),(.75,.2,.45,1),
+        (.300,.180,.420,1),(.392,.208,.300,1),(.188,.204,.427,1),(.308,.292,.308,1),
+        (.522,.298,.188,1),(.228,.442,.158,1),(.816,.275,.282,1),(.459,.443,.380,1),
+        (.349,.490,.808,1),(.824,.490,.173,1),(.522,.584,.631,1),(.427,.667,.173,1),
+        (.824,.667,.600,1),(.427,.761,.792,1),(.855,.831,.369,1),(.871,.933,.839,1),
     ]
     tree = rendering_tree_of(context)
     key = tree.as_pointer() if tree is not None else 0
