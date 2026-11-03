@@ -3513,8 +3513,8 @@ class TRZ_PT_panel(bpy.types.Panel):
                 layout.separator()
                 row = layout.row()
                 row.alignment = 'CENTER'
-                row.scale_y = 8.0
-                row.scale_x = 8.0
+                row.scale_y = 12.0
+                row.scale_x = 12.0
                 row.label(text='', icon_value=heart_id)
                 caption = layout.row()
                 caption.alignment = 'CENTER'
