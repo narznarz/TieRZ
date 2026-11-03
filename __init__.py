@@ -1726,6 +1726,9 @@ class TRZ_Preferences(bpy.types.AddonPreferences):
         translation_context=i18n_DOMAIN)
     show_names: BoolProperty(name='Show Names',default=True,update=preferences_update_visibility,
         description='Show small upright labels above named ties',translation_context=i18n_DOMAIN)
+    show_macho_heart: BoolProperty(name='Show MachoCAT Heart',default=True,
+        description='Show the MachoCAT heart image at the bottom of the TieRZ N-panel',
+        translation_context=i18n_DOMAIN)
     spacing: FloatProperty(name='Strand spacing', default=8, min=4, max=50,update=preferences_update_routes,
                            translation_context=i18n_DOMAIN)
     width: FloatProperty(name='Tie width', default=8, min=2, max=20,update=preferences_update_routes,
@@ -1760,6 +1763,8 @@ class TRZ_Preferences(bpy.types.AddonPreferences):
         layout = self.layout
         layout.label(text='Language', icon='WORLD')
         layout.prop(self, 'language_mode', text='')
+        layout.separator()
+        layout.prop(self, 'show_macho_heart', text='Show MachoCAT Heart')
         layout.separator()
         layout.label(text='GitHub: https://github.com/narznarz/TieRZ')
         row = layout.row()
@@ -3080,6 +3085,7 @@ ui__ICON_RETRY_LIMIT = 6
 
 ui__icon_collections = {}
 ui__icon_id = 0
+ui__heart_icon_id = 0
 ui__icon_retry = {'count': 0, 'reported': False}
 
 
@@ -3091,6 +3097,11 @@ def ui__icon_path():
 def ui_icon_id():
     """Preview icon id of the MachoCAT tab icon, or 0 when unavailable."""
     return ui__icon_id
+
+
+def ui_heart_icon_id():
+    """Preview icon id of the MachoCAT heart image, or 0 when unavailable."""
+    return ui__heart_icon_id
 
 
 ui__fallback_cache = {'name': ''}
@@ -3180,8 +3191,9 @@ def ui__tag_panel_redraw():
 
 
 def ui__drop_icons():
-    global ui__icon_id
+    global ui__icon_id, ui__heart_icon_id
     ui__icon_id = 0
+    ui__heart_icon_id = 0
     for collection in list(ui__icon_collections.values()):
         try:
             bpy.utils.previews.remove(collection)
@@ -3230,6 +3242,18 @@ def ui_register_icons(force=False):
     ui__icon_collections['main'] = collection
     ui__icon_id = int(icon_id)
     ui__apply_panel_icon(ui__icon_id)
+    # Also load the MachoCAT heart image for the N-panel footer.
+    global ui__heart_icon_id
+    heart_path = os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                              'assets', '8_macho_love.png')
+    if os.path.isfile(heart_path):
+        try:
+            heart_preview = collection.load('macho_heart', heart_path, 'IMAGE')
+            hid = getattr(heart_preview, 'icon_id', 0)
+            if hid and hid > 0:
+                ui__heart_icon_id = int(hid)
+        except Exception as exc:
+            print(f"[TieRZ] MachoCAT heart icon load failed: {exc}")
     ui__tag_panel_redraw()
     return ui__icon_id
 
@@ -3395,18 +3419,10 @@ class TRZ_PT_panel(bpy.types.Panel):
     bl_category = 'TieRZ'
 
     def draw_header(self,context):
-        # Panel types expose no icon RNA in 4.2-5.0, so the header row is
-        # drawn by hand: custom preview icon when it loaded, built-in icon
-        # otherwise. Reading the cached id keeps draw() free of preview work.
+        # Tab strip icon is set via bl_icon_value (Clayrz pattern); the header
+        # row only shows the label to avoid a duplicate icon.
         layout = self.layout
-        try:
-            icon_id = ui_icon_id()
-            if icon_id:
-                layout.label(text='TieRZ', icon_value=icon_id, translate=False)
-                return
-        except Exception:
-            pass
-        layout.label(text='TieRZ', icon=ui__fallback_icon(), translate=False)
+        layout.label(text='TieRZ', translate=False)
 
     def draw(self,context):
         layout = self.layout
@@ -3418,13 +3434,7 @@ class TRZ_PT_panel(bpy.types.Panel):
         split = layout.split(factor=0.5)
         version_row = split.column()
         version_text = 'V ' + ui__addon_version()
-        icon_id = ui_icon_id()
-        if icon_id:
-            # Second, independent place the preview icon is drawn, so a build
-            # that ever changes panel header handling still shows it.
-            version_row.label(text=version_text, icon_value=icon_id)
-        else:
-            version_row.label(text=version_text)
+        version_row.label(text=version_text)
         right = split.column()
         right.alignment = 'RIGHT'
         right.label(text='by NARZ')
@@ -3495,6 +3505,17 @@ class TRZ_PT_panel(bpy.types.Panel):
         cleanup_row.alert = True
         cleanup_row.operator('tie.rz_cleanup_addon_data',
                              text=i18n_tr('Clean Add-on Data'),icon='TRASH',translate=False)
+
+        # MachoCAT heart image at the bottom of the N-panel (optional).
+        if getattr(options, 'show_macho_heart', True):
+            heart_id = ui_heart_icon_id()
+            if heart_id:
+                layout.separator()
+                row = layout.row()
+                row.alignment = 'CENTER'
+                row.scale_y = 4.0
+                row.scale_x = 4.0
+                row.label(text='', icon_value=heart_id)
 
 
 def ui_context_menu(self,context):
