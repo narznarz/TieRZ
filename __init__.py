@@ -3131,6 +3131,17 @@ def ui__panel_icon_props():
 
 def ui__apply_panel_icon(icon_id):
     """Best-effort class-level icon, only for builds that expose the RNA."""
+    # Blender reads bl_icon_value as a plain class attribute even though it is
+    # not part of Panel.bl_rna.properties (Clayrz proves this works on 5.4).
+    try:
+        TRZ_PT_panel.bl_icon_value = int(icon_id)
+    except Exception:
+        pass
+    try:
+        TRZ_PT_panel.bl_icon = 'NONE' if icon_id else ui__fallback_icon()
+    except Exception:
+        pass
+    # Also try the RNA path for forward-compat with builds that expose it.
     props = ui__panel_icon_props()
     if 'bl_icon_value' in props:
         try:
