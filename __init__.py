@@ -3418,12 +3418,6 @@ class TRZ_PT_panel(bpy.types.Panel):
     bl_region_type = 'UI'
     bl_category = 'TieRZ'
 
-    def draw_header(self,context):
-        # Tab strip icon is set via bl_icon_value (Clayrz pattern); the header
-        # row only shows the label to avoid a duplicate icon.
-        layout = self.layout
-        layout.label(text='TieRZ', translate=False)
-
     def draw(self,context):
         layout = self.layout
         options = preferences_prefs(context)
