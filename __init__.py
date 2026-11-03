@@ -3513,9 +3513,12 @@ class TRZ_PT_panel(bpy.types.Panel):
                 layout.separator()
                 row = layout.row()
                 row.alignment = 'CENTER'
-                row.scale_y = 4.0
-                row.scale_x = 4.0
+                row.scale_y = 8.0
+                row.scale_x = 8.0
                 row.label(text='', icon_value=heart_id)
+                caption = layout.row()
+                caption.alignment = 'CENTER'
+                caption.label(text='MACHO loves you\u2665', translate=False)
 
 
 def ui_context_menu(self,context):
