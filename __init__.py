@@ -3074,62 +3074,153 @@ def ui__addon_version():
         return ''
 
 
+ui__ICON_KEY = 'TieRZ_machocat_tab'
+ui__FALLBACK_ICON = 'SNAP_MIDPOINT'
+ui__ICON_RETRY_LIMIT = 6
+
 ui__icon_collections = {}
+ui__icon_id = 0
+ui__icon_retry = {'count': 0, 'reported': False}
+
+
+def ui__icon_path():
+    return os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                        'assets', '1_macho_hoe.png')
+
+
+def ui_icon_id():
+    """Preview icon id of the MachoCAT tab icon, or 0 when unavailable."""
+    return ui__icon_id
+
+
+ui__fallback_cache = {'name': ''}
+
+
+def ui__fallback_icon():
+    """First icon name that exists in this build's icon enum."""
+    if ui__fallback_cache['name']:
+        return ui__fallback_cache['name']
+    name = ui__FALLBACK_ICON
+    try:
+        param = bpy.types.UILayout.bl_rna.functions['label'].parameters['icon']
+        valid = {item.identifier for item in param.enum_items}
+        for candidate in (ui__FALLBACK_ICON, 'NODE', 'PLUGIN', 'NONE'):
+            if candidate in valid:
+                name = candidate
+                break
+    except Exception:
+        pass
+    ui__fallback_cache['name'] = name
+    return name
+
+
+def ui__panel_icon_props():
+    """Registered Panel RNA properties.
+
+    NOTE: ``Panel`` exposes no ``bl_icon`` / ``bl_icon_value`` at all in
+    4.2, 4.4 and 5.0 (checked against the generated API reference), so
+    assigning them to a panel class is silently ignored by Blender. That is
+    why the header icon is drawn explicitly in ``TRZ_PT_panel.draw_header``.
+    The probe is kept so a build that ever adds the property still uses it.
+    """
+    try:
+        return set(bpy.types.Panel.bl_rna.properties.keys())
+    except Exception:
+        return set()
+
+
+def ui__apply_panel_icon(icon_id):
+    """Best-effort class-level icon, only for builds that expose the RNA."""
+    props = ui__panel_icon_props()
+    if 'bl_icon_value' in props:
+        try:
+            TRZ_PT_panel.bl_icon_value = int(icon_id)
+        except Exception:
+            pass
+    if 'bl_icon' in props:
+        try:
+            TRZ_PT_panel.bl_icon = 'NONE' if icon_id else ui__fallback_icon()
+        except Exception:
+            pass
+
+
+def ui__tag_panel_redraw():
+    """Repaint node editor sidebars so a freshly loaded icon shows up."""
+    try:
+        windows = bpy.context.window_manager.windows
+    except Exception:
+        return
+    for window in windows:
+        try:
+            screen = window.screen
+        except Exception:
+            continue
+        if screen is None:
+            continue
+        for area in screen.areas:
+            if area.type != 'NODE_EDITOR':
+                continue
+            for region in area.regions:
+                if region.type == 'UI':
+                    try:
+                        region.tag_redraw()
+                    except Exception:
+                        pass
+
+
+def ui__drop_icons():
+    global ui__icon_id
+    ui__icon_id = 0
+    for collection in list(ui__icon_collections.values()):
+        try:
+            bpy.utils.previews.remove(collection)
+        except Exception:
+            pass
+    ui__icon_collections.clear()
 
 
 def ui_register_icons(force=False):
-    if force and 'main' in ui__icon_collections:
-        try:
-            bpy.utils.previews.remove(ui__icon_collections.pop('main'))
-        except Exception:
-            ui__icon_collections.pop('main', None)
-    if 'main' in ui__icon_collections:
-        collection = ui__icon_collections['main']
-        preview = collection.get('TieRZ_machocat_tab')
-        if preview is not None and getattr(preview, 'icon_id', 0):
-            TRZ_PT_panel.bl_icon_value = preview.icon_id
-            TRZ_PT_panel.bl_icon = 'NONE'
-            return
-        try:
-            bpy.utils.previews.remove(collection)
-        except Exception:
-            pass
-        ui__icon_collections.pop('main', None)
+    """Load the MachoCAT preview icon, keeping it alive in a collection."""
+    global ui__icon_id
+    if force:
+        ui__drop_icons()
+        ui__icon_retry['count'] = 0
+        ui__icon_retry['reported'] = False
+        ui__fallback_cache['name'] = ''
+    if ui__icon_id and 'main' in ui__icon_collections:
+        return ui__icon_id
+
+    ui__drop_icons()
+    icon_path = ui__icon_path()
+    if not os.path.isfile(icon_path):
+        print(f"[TieRZ] MachoCAT tab icon not found: {icon_path}")
+        return 0
 
     collection = bpy.utils.previews.new()
-    icon_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'assets', '1_macho_hoe.png')
-    if os.path.isfile(icon_path):
-        loaded = False
-        for _ in range(2):
-            try:
-                preview = collection.load('TieRZ_machocat_tab', icon_path, 'IMAGE')
-            except Exception as exc:
-                print(f"[TieRZ] MachoCAT tab icon load failed: {exc}")
-                preview = None
-            if preview is not None and getattr(preview, 'icon_id', 0):
-                TRZ_PT_panel.bl_icon_value = preview.icon_id
-                TRZ_PT_panel.bl_icon = 'NONE'
-                ui__icon_collections['main'] = collection
-                loaded = True
-                break
-            try:
-                bpy.utils.previews.remove(collection)
-            except Exception:
-                pass
-            collection = bpy.utils.previews.new()
-        if not loaded:
-            print("[TieRZ] MachoCAT tab icon could not be loaded; using built-in fallback")
-    else:
-        print(f"[TieRZ] MachoCAT tab icon not found: {icon_path}")
+    preview = None
+    try:
+        preview = collection.load(ui__ICON_KEY, icon_path, 'IMAGE')
+    except Exception as exc:
+        print(f"[TieRZ] MachoCAT tab icon load failed: {exc}")
+        preview = None
+
+    icon_id = getattr(preview, 'icon_id', 0) if preview is not None else 0
+    if icon_id <= 0:
+        # Headless Blender never bakes preview icons, and a GUI build can be
+        # asked before its first draw. Drop the collection so no stale id can
+        # leak into the UI, keep the built-in fallback, and retry later.
         try:
             bpy.utils.previews.remove(collection)
         except Exception:
             pass
+        ui__apply_panel_icon(0)
+        return 0
 
-    if 'main' not in ui__icon_collections:
-        ui__icon_collections.pop('main', None)
-        TRZ_PT_panel.bl_icon_value = 0
-        TRZ_PT_panel.bl_icon = 'SNAP_MIDPOINT'
+    ui__icon_collections['main'] = collection
+    ui__icon_id = int(icon_id)
+    ui__apply_panel_icon(ui__icon_id)
+    ui__tag_panel_redraw()
+    return ui__icon_id
 
 
 def ui_sync_panel_state(context,tree,ties):
@@ -3158,8 +3249,53 @@ def ui_sync_panel_state(context,tree,ties):
 def ui__refresh_panel_icon(*_):
     try:
         ui_register_icons(force=True)
+        if ui__icon_id:
+            ui__tag_panel_redraw()
+        else:
+            ui__schedule_icon_retry()
     except Exception as exc:
         print(f"[TieRZ] icon refresh failed: {exc}")
+
+
+def ui__icon_retry_timer():
+    """Re-attempt the preview load a few times, then give up quietly."""
+    if ui__icon_id:
+        return None
+    ui__icon_retry['count'] += 1
+    try:
+        ui_register_icons()
+    except Exception as exc:
+        print(f"[TieRZ] icon retry failed: {exc}")
+    if ui__icon_id:
+        ui__tag_panel_redraw()
+        return None
+    if ui__icon_retry['count'] >= ui__ICON_RETRY_LIMIT:
+        if not ui__icon_retry['reported']:
+            ui__icon_retry['reported'] = True
+            print("[TieRZ] MachoCAT tab icon unavailable; using built-in fallback")
+        return None
+    return 0.5
+
+
+def ui__schedule_icon_retry():
+    if ui__icon_id:
+        return
+    ui__icon_retry['count'] = 0
+    ui__icon_retry['reported'] = False
+    try:
+        if not bpy.app.timers.is_registered(ui__icon_retry_timer):
+            bpy.app.timers.register(ui__icon_retry_timer, first_interval=0.25)
+    except Exception as exc:
+        print(f"[TieRZ] icon retry scheduling failed: {exc}")
+
+
+def ui__cancel_icon_retry():
+    try:
+        if bpy.app.timers.is_registered(ui__icon_retry_timer):
+            bpy.app.timers.unregister(ui__icon_retry_timer)
+    except Exception:
+        pass
+    ui__icon_retry['count'] = 0
 
 
 def ui__ensure_icon_handler():
@@ -3173,12 +3309,9 @@ def ui_unregister_icons():
             bpy.app.handlers.load_post.remove(ui__refresh_panel_icon)
         except ValueError:
             pass
-    for collection in list(ui__icon_collections.values()):
-        try:
-            bpy.utils.previews.remove(collection)
-        except Exception:
-            pass
-    ui__icon_collections.clear()
+    ui__cancel_icon_retry()
+    ui__drop_icons()
+    ui__apply_panel_icon(0)
 
 
 def ui_state(context):
@@ -3249,7 +3382,20 @@ class TRZ_PT_panel(bpy.types.Panel):
     bl_space_type = 'NODE_EDITOR'
     bl_region_type = 'UI'
     bl_category = 'TieRZ'
-    bl_icon_value = 0
+
+    def draw_header(self,context):
+        # Panel types expose no icon RNA in 4.2-5.0, so the header row is
+        # drawn by hand: custom preview icon when it loaded, built-in icon
+        # otherwise. Reading the cached id keeps draw() free of preview work.
+        layout = self.layout
+        try:
+            icon_id = ui_icon_id()
+            if icon_id:
+                layout.label(text='TieRZ', icon_value=icon_id, translate=False)
+                return
+        except Exception:
+            pass
+        layout.label(text='TieRZ', icon=ui__fallback_icon(), translate=False)
 
     def draw(self,context):
         layout = self.layout
@@ -3259,7 +3405,15 @@ class TRZ_PT_panel(bpy.types.Panel):
         layout.operator_context = 'INVOKE_DEFAULT'
 
         split = layout.split(factor=0.5)
-        split.column().label(text='V ' + ui__addon_version())
+        version_row = split.column()
+        version_text = 'V ' + ui__addon_version()
+        icon_id = ui_icon_id()
+        if icon_id:
+            # Second, independent place the preview icon is drawn, so a build
+            # that ever changes panel header handling still shows it.
+            version_row.label(text=version_text, icon_value=icon_id)
+        else:
+            version_row.label(text=version_text)
         right = split.column()
         right.alignment = 'RIGHT'
         right.label(text='by NARZ')
@@ -3386,6 +3540,9 @@ def register():
     for cls in __init___classes:
         cls.bl_translation_context = i18n_DOMAIN
         bpy.utils.register_class(cls)
+    # Preview icons can only be baked once the interface exists, so the first
+    # attempt may come back with icon_id 0: retry briefly after startup.
+    ui__schedule_icon_retry()
     language_mode = 'AUTO'
     try:
         addon = bpy.context.preferences.addons.get(__name__)
