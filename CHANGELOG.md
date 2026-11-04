@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.18.49 (2026-11-05)
+
+### Changed
+- **Right-click menu: extra left padding after each icon** (all entries, e.g. `Move`,
+  `Rotate`, `Spacing`, `Name`, `Color`, `Remove Tie`).
+
 ## 0.18.48 (2026-11-05)
 
 ### Changed
