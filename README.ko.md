@@ -54,7 +54,7 @@ TieRZ는 N 패널에서 다양한 타이 디자인을 선택하고 변경할 수
 - **N 패널 (N panel)**: 선택된 타이의 이름, 색상, 간격, 스타일(`MACHOCAT`, `MUSIC NOTE` 등) 및 외형 편집.
 - **크기 맞춤 (Match sizes)**: `Alt+S`로 선택된 여러 타이의 칼라 크기/너비 균일 통일.
 - **함께 이동 (Move selected)**: `G` 키로 선택된 노드 및 타이를 자연스럽게 동기화 이동.
-- **제거 (Remove)**: `X` (타이만 안전하게 해제) / `Del` 또는 `Backspace` (타이 및 노드 동시 삭제).
+- **제거 (Remove)**: `X` 또는 `Del` (선택된 타이만 해제, 리라우트는 유지).
 
 <p align="center">
   <img src="assets/tierz-context-menu.png" width="260" alt="TieRZ Context Menu"/>
@@ -71,7 +71,7 @@ TieRZ는 N 패널에서 다양한 타이 디자인을 선택하고 변경할 수
 | `X` | 연결선은 유지하고 타이만 안전하게 해제 |
 | `Alt+S` | 선택된 타이 크기 일치 |
 | `G` | 연결된 노드 및 타이 함께 이동 |
-| `Del` / `Backspace` | 선택된 타이 및 노드 삭제 |
+| `Del` | 선택된 타이 삭제 (`X`와 동일, 리라우트 유지) |
 
 ---
 

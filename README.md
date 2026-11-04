@@ -54,7 +54,7 @@ TieRZ allows customizing tie designs via the N-panel. In addition to clean stand
 - **N panel**: edit selected tie name, color, spacing, style (`MACHOCAT`, `MUSIC NOTE`, etc.), and appearance.
 - **Match sizes**: `Alt+S` to unify selected tie sizes.
 - **Move selected**: `G` to move selected nodes and ties together.
-- **Remove**: `X` (ties only) / `Del` or `Backspace` (ties and nodes).
+- **Remove**: `X` or `Del` (selected ties only; reroute helpers are kept).
 
 <p align="center">
   <img src="assets/tierz-context-menu.png" width="260" alt="TieRZ Context Menu"/>
@@ -71,7 +71,7 @@ TieRZ allows customizing tie designs via the N-panel. In addition to clean stand
 | `X` | Remove selected ties |
 | `Alt+S` | Match sizes |
 | `G` | Move selected nodes and ties |
-| `Del` / `Backspace` | Remove selected ties and nodes |
+| `Del` | Remove selected ties (same as `X`; keeps reroute helpers) |
 
 ---
 
