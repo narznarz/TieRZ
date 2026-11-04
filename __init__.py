@@ -3119,7 +3119,29 @@ class TRZ_OT_set_color_mode(bpy.types.Operator):
         return {'FINISHED'}
 
 
-interaction_classes = [TRZ_OT_hover,TRZ_OT_gesture,TRZ_OT_pick,TRZ_OT_circle_clear_ties,TRZ_OT_move,TRZ_OT_scale,TRZ_OT_match_scale,TRZ_OT_rotate,TRZ_OT_name,TRZ_OT_color,TRZ_OT_color_popup,TRZ_OT_delete,TRZ_OT_edit,TRZ_OT_cleanup_addon_data,TRZ_OT_box,TRZ_OT_move_nodes,TRZ_OT_set_tie_style,TRZ_OT_set_color_mode]
+class TRZ_OT_move_menu(bpy.types.Operator):
+    """Launch the G move modal from a menu/panel button.
+
+    Blender echoes the keymap of a directly referenced operator next to its
+    button; routing through this keymap-free wrapper keeps the entry clean while
+    still starting the same interactive move.
+    """
+    bl_idname = 'tie.rz_move_from_menu'
+    bl_label = 'Move Selected Nodes and Ties'
+    bl_options = {'INTERNAL'}
+
+    @classmethod
+    def poll(cls,context):
+        tree = rendering_tree_of(context)
+        return bool(tree and tree.is_editable and (
+            any(n.select and not routing_managed(n) for n in tree.nodes) or
+            any(t['id'] in selection_of(tree) for t in data_read(tree))))
+
+    def invoke(self,context,event):
+        return bpy.ops.tie.rz_move_selection('INVOKE_DEFAULT')
+
+
+interaction_classes = [TRZ_OT_hover,TRZ_OT_gesture,TRZ_OT_pick,TRZ_OT_circle_clear_ties,TRZ_OT_move,TRZ_OT_scale,TRZ_OT_match_scale,TRZ_OT_rotate,TRZ_OT_name,TRZ_OT_color,TRZ_OT_color_popup,TRZ_OT_delete,TRZ_OT_edit,TRZ_OT_cleanup_addon_data,TRZ_OT_box,TRZ_OT_move_nodes,TRZ_OT_set_tie_style,TRZ_OT_set_color_mode,TRZ_OT_move_menu]
 
 
 # ==========================================================================
@@ -3406,18 +3428,17 @@ def ui_selected_actions(layout,context):
         layout.context_pointer_set('node_tree',tree)
     col = layout.column(align=True)
     col.enabled = bool(tree and tree.is_editable and chosen)
+    # Shortcut key leads every label so the menu accelerator equals the key:
+    # (G) / (N) / (C) / (X).
+    move_row = col.row()
+    move_row.operator('tie.rz_move_from_menu',text=i18n_tr('(G) Move'),translate=False)
     rename = col.row()
     rename.enabled = bool(tree and tree.is_editable and len(chosen)==1)
     rename_op = rename.operator('tie.rz_name',text=i18n_tr('(N) Name'),translate=False)
     rename_op.ui_hide_shortcut = False
     col.operator('tie.rz_color_popup',text=i18n_tr('(C) Color'),translate=False)
-    move_row = col.row()
-    move_row.operator('tie.rz_move_selection',text=i18n_tr('(G) Move'),translate=False)
     remove_row = col.row()
     remove_row.alert = True
-    # The accelerator is the first letter of the label, so the shortcut key leads
-    # every entry: (N) / (C) / (G) / (X). This keeps the menu key equal to the
-    # documented shortcut instead of being taken by an earlier word.
     remove_text = i18n_tr('Remove Tie' if len(chosen)==1 else 'Remove Ties')
     remove_row.operator('tie.rz_delete',text='(X) ' + remove_text,translate=False)
 

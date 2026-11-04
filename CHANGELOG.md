@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.18.47 (2026-11-05)
+
+### Changed
+- **`(G) Move` moved to the top of the right-click menu.**
+- **Removed the faded `G` shortcut hint shown next to the `(G) Move` button**: the
+  right-click menu now routes the move action through a dedicated, keymap-free
+  wrapper operator, so Blender no longer echoes the move key beside the entry.
+
 ## 0.18.46 (2026-11-05)
 
 ### Changed
