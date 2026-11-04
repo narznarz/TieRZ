@@ -100,7 +100,7 @@ TieRZ is free and open-source, and **will always remain 100% free with no moneti
 ## Copyright
 
 <p align="left">
-  <img src="assets/7_macho_shy.png" width="96" alt="MACHOCAT Character" style="vertical-align: middle; margin-right: 12px;"/>
+  <img src="assets/7_macho_shy.png" width="32" alt="MACHOCAT Character" style="vertical-align: middle; margin-right: 12px;"/>
   <span>MACHOCAT character copyright &copy; <b>NARZ & 박냥냥</b>.</span>
 </p>
 
