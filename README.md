@@ -4,6 +4,7 @@ TieRZ is a Blender add-on that organizes node links with movable cable ties (rer
 [![Blender Compatibility](https://img.shields.io/badge/Blender-4.0%20~%205.4%20Alpha-ea7600?style=flat-square&logo=blender&logoColor=white)](https://www.blender.org/)
 [![License: GPL-3.0](https://img.shields.io/badge/License-GPL--3.0-blue.svg?style=flat-square)](LICENSE)
 [![Latest Release](https://img.shields.io/badge/Release-Latest-f5792a?style=flat-square)](https://github.com/narznarz/TieRZ/releases/latest)
+[![n](https://img.shields.io/badge/n-2ea043?style=flat-square)](https://github.com/narznarz/TieRZ/releases/latest)
 
 [![English](https://img.shields.io/badge/Language-English-238636?style=for-the-badge&logo=github)](README.md)
 [![한국어](https://img.shields.io/badge/Language-%ED%95%9C%EA%B5%AD%EC%96%B4-21262d?style=for-the-badge&logo=readme)](README.ko.md)
