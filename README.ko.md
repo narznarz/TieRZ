@@ -115,6 +115,4 @@ SPDX:GPL-3.0-or-later (GNU General Public License v3.0)
 
 ## 버전 (Version)
 
-<p align="left">
-  <span style="background:#000;color:#fff;border:1px solid #fff;padding:2px 8px;">n 0.18.49</span>
-</p>
+[![n 0.18.49](https://img.shields.io/badge/n%200.18.49-000000?style=flat-square)](https://github.com/narznarz/TieRZ/releases/tag/v0.18.49)
