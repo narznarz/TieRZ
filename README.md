@@ -68,10 +68,9 @@ TieRZ allows customizing tie designs via the N-panel. In addition to clean stand
 | `S` | Adjust spacing |
 | `N` | Name the selected tie |
 | `C` | Change color |
-| `X` | Remove selected ties |
+| `X` / `Del` | Remove selected ties (reroute helpers are kept) |
 | `Alt+S` | Match sizes |
 | `G` | Move selected nodes and ties |
-| `Del` | Remove selected ties (same as `X`; keeps reroute helpers) |
 
 ---
 
