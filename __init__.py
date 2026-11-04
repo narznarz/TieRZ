@@ -3035,11 +3035,13 @@ def interaction_add_keymaps():
     item.properties.action = 'DELETE'
     item.properties.delete_nodes = False
     interaction_keymaps.append((km,item))
-    for key in ['DEL','BACK_SPACE']:
-        item = km.keymap_items.new('tie.rz_edit',key,'PRESS')
-        item.properties.action = 'DELETE'
-        item.properties.delete_nodes = True
-        interaction_keymaps.append((km,item))
+    # Delete mirrors X: remove the selected ties only and leave their reroute
+    # helpers in place. Backspace is deliberately not bound so it keeps its
+    # native "reset to default" meaning in the node editor.
+    item = km.keymap_items.new('tie.rz_edit','DEL','PRESS')
+    item.properties.action = 'DELETE'
+    item.properties.delete_nodes = False
+    interaction_keymaps.append((km,item))
 
 
 def interaction_remove_keymaps():

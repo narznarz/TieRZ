@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.18.43 (2026-11-04)
+
+### Changed
+- **`Del` now mirrors `X`**: it removes only the selected ties and keeps their reroute
+  helpers, instead of deleting every selected node in the tree.
+- **`Backspace` is no longer bound**: it used to delete ties together with the selected
+  nodes, which collided with the node editor's native "reset to default" shortcut and
+  caused accidental edits. It now keeps its default Blender behavior.
+
 ## 0.18.42 (2026-11-04)
 
 ### Added
