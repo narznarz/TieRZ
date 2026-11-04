@@ -1,0 +1,403 @@
+<!DOCTYPE html><html class="dark" lang="ko" style=""><head><meta charset="utf-8"><meta content="width=device-width, initial-scale=1.0" name="viewport"><title>TieRZ — Blender 노드 케이블 타이 애드온</title><meta name="description" content="블렌더 셰이더·지오메트리·컴포지터 노드 와이어를 케이블 타이(리라우트 번들)로 정리하는 무료 오픈소스 Blender 애드온."><link rel="icon" href="assets/7_macho_shy.png" type="image/png"><meta content="web_standard" name="shell-type"><link href="https://fonts.googleapis.com" rel="preconnect"><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"><link href="https://fonts.googleapis.com/css2?family=Asta+Sans:wght@300..800&amp;family=Bitcount+Grid+Single:wght@100..900&amp;display=swap" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"><style>
+  *, *::before, *::after,
+  html, body, button, input, select, textarea,
+  p, span, a, h1, h2, h3, h4, h5, h6,
+  div, small, strong, em, b, i,
+  kbd, code, pre, label, table, th, td, badge, .font-mono {
+    font-family: 'Asta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+  }
+  @layer base {
+    html, body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Asta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    body {
+      overscroll-behavior: none;
+    }
+    main > :first-child {
+      margin-top: 0 !important;
+    }
+    main > :last-child {
+      margin-bottom: 0 !important;
+    }
+  }
+  ::-webkit-scrollbar {
+    display: none;
+  }
+</style><script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script><script id="tailwind-config">
+  tailwind.config = {darkMode: "class", theme: {extend: {colors: {outline: "#5a5068", "on-secondary-fixed": "#001a1a", "surface-tint": "#ff2d78", surface: "#0f0f1a", "tertiary-fixed": "#fff0c0", primary: "#ff2d78", "inverse-primary": "#8c0038", "tertiary-fixed-dim": "#ffe04a", "surface-container": "#141422", "on-primary-fixed-variant": "#8c0038", secondary: "#00ffcc", "secondary-fixed": "#c0fff4", "error-container": "#3d0f0f", "on-primary-container": "#ffe0ec", "on-secondary-container": "#c0fff4", "primary-fixed": "#ffe0ec", "tertiary-container": "#665200", "on-secondary": "#001a1a", "inverse-surface": "#e8e0f0", tertiary: "#ffe04a", error: "#ff4444", "surface-container-high": "#1e1e30", "surface-container-highest": "#28283e", "surface-bright": "#1a1a2e", "on-error": "#1a0000", "on-tertiary": "#1a1000", "inverse-on-surface": "#0a0a12", "outline-variant": "#302840", "on-primary-fixed": "#3d0020", "surface-container-lowest": "#0a0a12", "on-tertiary-fixed": "#1a1000", "on-error-container": "#ffa0a0", "on-tertiary-container": "#fff0c0", "on-background": "#e8e0f0", "primary-container": "#b3004e", "surface-dim": "#0f0f1a", "on-tertiary-fixed-variant": "#665200", "secondary-container": "#004d3d", "secondary-fixed-dim": "#00e6b8", background: "#0a0a12", "on-secondary-fixed-variant": "#004d4d", "surface-container-low": "#111118", "on-surface-variant": "#a098b0", "primary-fixed-dim": "#ff80aa", "on-primary": "#1a0010", "on-surface": "#e8e0f0", "surface-variant": "#1e1e30", "palette-rose": "#f5792a", "palette-mint": "#b9f3e4", "palette-yellow": "#fbbf24", "palette-earth": "#64748b"}, borderRadius: {DEFAULT: "0.125rem", lg: "0.25rem", xl: "0.5rem", full: "0.75rem"}, spacing: {margin: "1.5rem", "space-sm": "0.5rem", gutter: "1rem", "space-lg": "1.25rem", "space-xs": "0.25rem", "space-md": "0.75rem", "space-xl": "2rem", "gutter-sm": "0.5rem", "margin-mobile": "0.75rem", "gutter-desktop": "1.5rem", "margin-desktop": "3rem", "margin-tablet": "2rem"}, fontFamily: {sans: ["Asta Sans", "sans-serif"], "title-sm": ["Asta Sans", "sans-serif"], "body-md": ["Asta Sans", "sans-serif"], "label-md": ["Asta Sans", "sans-serif"], "headline-lg-mobile": ["Asta Sans", "sans-serif"], "body-sm": ["Asta Sans", "sans-serif"], "headline-md": ["Asta Sans", "sans-serif"], "headline-lg": ["Asta Sans", "sans-serif"], "headline-xl": ["Asta Sans", "sans-serif"], "headline-sm": ["Asta Sans", "sans-serif"], "label-sm": ["Asta Sans", "sans-serif"], "code-inline": ["Asta Sans", "sans-serif"], "kbd-shortcut": ["Asta Sans", "sans-serif"], "body-lg": ["Asta Sans", "sans-serif"], headline: ["Asta Sans"], display: ["Asta Sans"], body: ["Asta Sans"], label: ["Asta Sans"], mono: ["Asta Sans", "sans-serif"]}, fontSize: {"title-sm": ["15px", {lineHeight: "20px", letterSpacing: "0em", fontWeight: "600"}], "body-md": ["13px", {lineHeight: "20px", letterSpacing: "0em", fontWeight: "400"}], "label-md": ["12px", {lineHeight: "16px", letterSpacing: "0.02em", fontWeight: "500"}], "headline-lg-mobile": ["26px", {lineHeight: "32px", letterSpacing: "-0.01em", fontWeight: "600"}], "body-sm": ["11px", {lineHeight: "16px", letterSpacing: "0.01em", fontWeight: "400"}], "headline-md": ["22px", {lineHeight: "28px", letterSpacing: "-0.01em", fontWeight: "500"}], "headline-lg": ["32px", {lineHeight: "40px", letterSpacing: "-0.02em", fontWeight: "600"}], "headline-xl": ["40px", {lineHeight: "48px", letterSpacing: "-0.02em", fontWeight: "700"}], "headline-sm": ["16px", {lineHeight: "24px", fontWeight: "600"}], "label-sm": ["10px", {lineHeight: "14px", letterSpacing: "0.04em", fontWeight: "400"}], "body-lg": ["16px", {lineHeight: "26px", fontWeight: "400"}], "code-inline": ["12px", {lineHeight: "16px", fontWeight: "400"}], "kbd-shortcut": ["11px", {lineHeight: "12px", letterSpacing: "0.02em", fontWeight: "600"}]}}}}
+</script><style class="">.material-symbols-outlined { font-family: 'Material Symbols Outlined' !important; font-weight: normal; font-style: normal; font-size: inherit; line-height: 1; letter-spacing: normal; text-transform: none; display: inline-block; white-space: nowrap; word-wrap: normal; direction: ltr; -webkit-font-feature-settings: 'liga'; font-feature-settings: 'liga'; -webkit-font-smoothing: antialiased; }</style></head><body class="bg-background font-body-md text-body-md text-on-surface antialiased selection:bg-palette-mint selection:text-[#0c0d0f]" style="font-family: &quot;Asta Sans&quot;, sans-serif !important;"><header class="fixed top-0 left-0 w-full z-50 bg-[#0c0d0f]/90 backdrop-blur-xl border-b border-[#282a30] shadow-[0_4px_24px_rgba(0,0,0,0.6)]"><div class="h-16 w-full max-w-7xl mx-auto px-margin md:px-margin-tablet lg:px-margin-desktop flex items-center justify-between gap-space-md"><div class="flex items-center gap-space-md shrink-0"><a class="flex items-center gap-space-sm group" data-path="overview" href="#"><div class="relative flex items-center shrink-0"><img alt="MACHOCAT Mascot" class="w-8 h-8 rounded-full border border-palette-mint/40 bg-[#16181b] ml-1.5 p-0.5 object-contain shadow-sm" src="assets/7_macho_shy.png"></div><div class="flex flex-col"><span class="font-headline-sm text-headline-sm text-on-surface font-bold tracking-tight flex items-center gap-1.5">TieRZ</span><span class="text-[10px] text-on-surface-variant -mt-1 hidden sm:inline">blender-addon</span></div></a><div class="hidden md:flex items-center gap-1 pl-2 border-l border-[#282a30]"><span class="font-label-sm text-label-sm px-2 py-0.5 rounded bg-[#1c1e22] text-palette-yellow border border-[#282a30]">GPL-3.0</span></div></div><nav class="hidden xl:flex items-center gap-1 bg-[#111316] p-1 rounded-xl border border-[#282a30]"><a aria-current="page" class="px-space-sm py-1 transition-colors bg-[#1c1e22] text-palette-mint font-medium rounded-lg text-body-sm" data-path="overview" href="#">개요</a><a class="px-space-sm py-1 text-on-surface-variant hover:text-on-surface hover:bg-[#16181b] transition-colors text-body-sm rounded-lg" data-path="features" href="#features">주요 기능</a><a class="px-space-sm py-1 text-on-surface-variant hover:text-on-surface hover:bg-[#16181b] transition-colors text-body-sm rounded-lg" data-path="interactive-keymap" href="#keymap">키맵 매트릭스</a><a class="px-space-sm py-1 text-on-surface-variant hover:text-on-surface hover:bg-[#16181b] transition-colors text-body-sm rounded-lg" data-path="installation" href="#installation">설치 가이드</a><a class="px-space-sm py-1 text-on-surface-variant hover:text-on-surface hover:bg-[#16181b] transition-colors text-body-sm rounded-lg" data-path="warnings-faq" href="#warnings-faq">주의사항 &amp; FAQ</a><a class="px-space-sm py-1 text-on-surface-variant hover:text-on-surface hover:bg-[#16181b] transition-colors text-body-sm rounded-lg" data-path="release-notes" href="#release-notes">계보 &amp; 크레딧</a></nav><div class="flex items-center gap-space-sm shrink-0"><a class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#16181b] hover:bg-[#1c1e22] border border-[#282a30] text-on-surface transition-all font-label-sm text-label-sm group shadow-sm" href="https://github.com/narznarz/TieRZ" rel="noreferrer" target="_blank"><svg class="w-4 h-4 fill-current text-on-surface-variant group-hover:text-on-surface transition-colors" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"></path></svg><span class="hidden sm:inline text-[11px] text-palette-yellow">★ 1.4k</span></a><a class="flex items-center gap-1.5 px-space-md py-1.5 rounded-xl bg-palette-mint hover:bg-palette-mint/90 text-[#0c0d0f] font-label-md text-label-md font-bold shadow-[0_0_20px_rgba(185,243,228,0.35)] transition-all" data-path="download" href="https://github.com/narznarz/TieRZ/releases/latest" target="_blank"><span class="material-symbols-outlined text-[16px]">folder_zip</span><span class="hidden md:inline">TieRZ-v1.2.0.zip 다운로드</span><span class="md:hidden">.zip 받기</span></a></div></div></header><main class="w-full pt-16 bg-[#0c0d0f] min-h-screen"><div class="flex flex-col w-full">
+<!-- SECTION 1: HERO & INTERACTIVE WORKSPACE PREVIEW -->
+<section class="relative w-full overflow-hidden pb-space-xl pt-space-md">
+<!-- Sleek Cold Accent Ambient Lights -->
+<div class="absolute -top-32 left-1/2 -translate-x-1/2 w-[920px] h-[520px] bg-gradient-to-b from-palette-mint/15 via-[#16181b]/5 to-transparent blur-3xl pointer-events-none -z-10"></div>
+<div class="absolute top-48 left-10 w-80 h-80 bg-palette-mint/5 blur-3xl pointer-events-none -z-10"></div>
+<div class="w-full max-w-7xl mx-auto px-margin md:px-margin-tablet lg:px-margin-desktop flex flex-col gap-space-lg">
+<!-- Top Open-Source Meta Eyebrow Badges Bar -->
+<div class="flex flex-wrap items-center justify-between gap-space-sm pt-space-xs">
+<div class="flex flex-wrap items-center gap-2">
+<a class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#16181b] border border-[#282a30] text-on-surface font-label-sm text-label-sm hover:border-palette-mint transition-colors shadow-sm" href="https://github.com/narznarz/TieRZ" rel="noreferrer" target="_blank">
+<span class="w-2 h-2 rounded-full bg-palette-mint animate-pulse"></span>
+<span class="text-palette-mint font-bold">GitHub</span>
+<span class="text-on-surface-variant font-medium">v1.2.0 릴리즈</span>
+<span class="px-1.5 py-0.2 rounded bg-[#1c1e22] text-[10px] text-palette-rose">최신</span>
+</a>
+
+
+<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#16181b] text-on-surface font-label-sm text-label-sm border border-palette-mint/40 shadow-sm"><img alt="MACHOCAT" class="w-4 h-4 rounded-full object-contain" src="assets/7_macho_shy.png"><span class="text-palette-mint font-semibold">MACHOCAT</span><span class="text-on-surface-variant text-[10px] font-medium">마초냥</span></span></div>
+<!-- Locale Pills -->
+<div class="flex items-center gap-1 bg-[#111316] p-1 rounded-xl border border-[#282a30]">
+<button class="px-2.5 py-0.5 rounded-lg text-[#0c0d0f] bg-palette-mint font-label-sm text-label-sm font-semibold transition-all shadow-sm" id="hero-btn-en" onclick="setAppLanguage('en')">EN English</button>
+<button class="px-2.5 py-0.5 rounded-lg text-on-surface-variant hover:text-on-surface font-label-sm text-label-sm transition-all font-medium" id="hero-btn-ko" onclick="setAppLanguage('ko')">KO 한국어</button>
+</div>
+</div>
+<!-- Hero Typography, Tagline & CTAs Cluster -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-space-lg items-end">
+<div class="lg:col-span-8 flex flex-col gap-space-sm">
+<div class="inline-flex items-center gap-2 text-[11px] text-palette-mint tracking-wider uppercase font-semibold">
+<span class="material-symbols-outlined text-[16px] text-palette-mint">cable</span>
+<span class="">블렌더 셰이딩 &amp; 지오메트리 노드를 위한 필수 애드온</span>
+</div>
+<h1 class="font-headline-xl text-headline-xl text-on-surface tracking-tight leading-tight font-bold">노드 와이어를 <span class="text-palette-mint underline decoration-palette-rose/50 decoration-wavy">케이블 타이</span>로 정리하세요
+</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl font-normal leading-relaxed">복잡하게 얽힌 와이어 위를 마우스 제스처로 쓱 그어, 자유롭게 정리하세요. <br>최신 Blender 5.3 Beta &amp; 5.4 Alpha 환경에서 테스트 되었습니다.<br>(이전버전들은 테스트 되지 않았습니다.)</p>
+<!-- Quick Git Clone & Pip Snippet Widget -->
+
+</div>
+<!-- Primary Action Cluster -->
+<div class="lg:col-span-4 flex flex-col sm:flex-row lg:flex-col gap-space-xs justify-end">
+<a class="flex items-center justify-center gap-2 px-space-md py-3.5 rounded-xl bg-palette-mint hover:bg-palette-mint/90 text-[#0c0d0f] font-label-md text-label-md font-bold shadow-[0_4px_24px_rgba(185,243,228,0.35)] transition-all active:scale-[0.99]" href="https://github.com/narznarz/TieRZ/releases/latest" target="_blank">
+<span class="material-symbols-outlined text-[20px]">folder_zip</span>
+<span class="">TieRZ-v1.2.0.zip 다운로드</span>
+</a>
+<div class="flex items-center gap-space-xs">
+<a class="flex-1 flex items-center justify-center gap-2 px-space-md py-2.5 rounded-xl bg-[#16181b] hover:bg-[#1c1e22] border border-[#282a30] text-on-surface font-label-md text-label-md transition-all shadow-sm group" href="https://github.com/narznarz/TieRZ" rel="noreferrer" target="_blank">
+<svg class="w-4 h-4 fill-current text-on-surface-variant group-hover:text-palette-mint transition-colors" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"></path></svg>
+<span class="font-medium">GitHub 저장소 방문</span>
+</a>
+
+</div>
+</div>
+</div>
+<!-- WORKSPACE MOCKUP: Shader Editor Canvas + N-Panel UI -->
+<div class="w-full rounded-2xl bg-[#111316] overflow-hidden shadow-2xl shadow-black/80 border border-[#282a30] flex flex-col mt-space-sm ring-1 ring-white/5"><div class="relative w-full bg-[#0c0d0f] p-space-sm md:p-space-md"><div class="grid grid-cols-1 md:grid-cols-2 gap-space-md" id="real-comparison-view"><div class="flex flex-col rounded-xl bg-[#16181b] overflow-hidden border border-[#282a30] shadow-lg"><div class="px-3 py-2 bg-[#1c1e22] border-b border-[#282a30] flex items-center justify-between"><div class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full bg-error"></span><span class="font-label-sm text-label-sm font-bold text-on-surface">정리 전: 얽힌 스파게티 라인</span></div><span class="text-[11px] text-on-surface-variant bg-[#111316] px-2 py-0.5 rounded border border-[#282a30]">복잡하게 얽힌 와이어</span></div><div class="relative bg-[#0c0d0f] flex items-center justify-center p-2"><img alt="정리 전: 얽힌 스파게티 라인" class="w-full h-80 md:h-[460px] object-contain rounded select-none" src="assets/before-spaghetti.png"><div class="absolute bottom-4 left-4 bg-[#111316]/90 backdrop-blur-md px-2.5 py-1 rounded border border-[#282a30] text-[11px] text-error flex items-center gap-1.5"><span class="material-symbols-outlined text-[14px]">close</span><span class="">셰이더 블록 사이를 어지럽게 가로지르는 얽힌 와이어</span></div></div></div><div class="flex flex-col rounded-xl bg-[#16181b] overflow-hidden border border-palette-mint/50 shadow-lg ring-1 ring-palette-mint/30"><div class="px-3 py-2 bg-[#1c1e22] border-b border-[#282a30] flex items-center justify-between"><div class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full bg-palette-mint animate-pulse"></span><span class="font-label-sm text-label-sm font-bold text-palette-mint">정리 후: TieRZ 케이블 타이 결속</span></div><span class="text-[11px] text-palette-yellow bg-[#111316] px-2 py-0.5 rounded border border-[#282a30]">정돈됨 &amp; 드래그 가능</span></div><div class="relative bg-[#0c0d0f] flex items-center justify-center p-2"><img alt="정리 후: TieRZ 케이블 타이 결속" class="w-full h-80 md:h-[460px] object-contain rounded select-none" src="assets/after-tierz.png"><div class="absolute bottom-4 left-4 bg-[#111316]/90 backdrop-blur-md px-2.5 py-1 rounded border border-palette-mint/40 text-[11px] text-palette-mint flex items-center gap-1.5"><span class="material-symbols-outlined text-[14px] text-palette-mint">done_all</span><span class="">이동식 타이 칼라로 깔끔하게 묶여 평행하게 정돈된 하네스</span></div></div></div></div></div></div>
+</div></section>
+<!-- SECTION 2: CORE FEATURES GRID (5 High-Impact Cards) -->
+<section class="w-full py-space-xl bg-[#111316]" id="features"><div class="w-full max-w-7xl mx-auto px-margin md:px-margin-tablet lg:px-margin-desktop flex flex-col gap-space-lg"><div class="flex flex-col md:flex-row md:items-end justify-between gap-space-sm"><div class="flex flex-col gap-space-xs"><div class="flex items-center gap-2 font-label-sm text-label-sm text-palette-mint"><span class="material-symbols-outlined text-[16px]">mouse</span><span class="">Blender Node Editor 컨텍스트 메뉴</span></div><h2 class="font-headline-lg text-headline-lg text-on-surface font-bold">실제 조작법 &amp; 우클릭 메뉴 매뉴얼</h2></div><p class="font-body-md text-body-md text-on-surface-variant max-w-md font-normal leading-relaxed">TieRZ의 핵심 단축키 조작법입니다.&nbsp;</p></div><div class="grid grid-cols-1 lg:grid-cols-12 gap-space-md items-start"><div class="lg:col-span-4 rounded-2xl bg-[#16181b] p-space-md flex flex-col gap-space-sm border border-[#282a30] shadow-xl"><div class="flex items-center justify-between border-b border-[#282a30] pb-2"><span class="font-label-sm text-label-sm font-semibold text-on-surface flex items-center gap-1.5">실제 컨텍스트 팝업 (TieRZ)</span><span class="px-2 py-0.5 rounded bg-[#1c1e22] text-palette-rose text-[10px] border border-[#282a30]">Blender UI</span></div><div class="p-2 bg-[#0c0d0f] rounded-xl flex items-center justify-center border border-[#282a30]"><img alt="TieRZ 컨텍스트 메뉴" class="w-full max-w-[280px] h-auto object-contain rounded select-none shadow-md" src="assets/tierz-context-menu.png"></div><div class="text-body-sm text-body-sm text-on-surface-variant flex flex-col gap-1 p-1"><p class="text-[11px] leading-tight text-palette-yellow">• 타이 칼라 위에서 마우스 우클릭 시 호출</p><p class="text-[11px] leading-tight text-on-surface-variant">• 각 항목의 밑줄 문자(R, S, N, C, X)가 즉시 단축키로 매핑</p></div></div><div class="lg:col-span-8 grid grid-cols-1 md:grid-cols-2 gap-space-sm"><div class="rounded-xl bg-[#16181b] p-space-md flex flex-col gap-1 border border-[#282a30] hover:border-palette-mint transition-colors"><div class="flex items-center justify-between"><span class="font-headline-sm text-headline-sm text-on-surface flex items-center gap-1.5 font-bold">Hold Z and drag</span><span class="font-kbd-shortcut text-kbd-shortcut px-1.5 py-0.5 rounded bg-[#1c1e22] text-palette-mint border border-[#282a30]">Z + 드래그</span></div><p class="font-body-sm text-body-sm text-on-surface-variant mt-1 leading-relaxed"><strong class="text-on-surface font-semibold">Hold Z and drag across wires</strong>: Z 키를 누른 상태에서 마우스로 전선을 가로질러 그으면 교차된 링크들을 케이블 타이로 즉시 결속합니다.</p></div><div class="rounded-xl bg-[#16181b] p-space-md flex flex-col gap-1 border border-[#282a30] hover:border-palette-rose transition-colors"><div class="flex items-center justify-between"><span class="font-headline-sm text-headline-sm text-on-surface flex items-center gap-1.5 font-bold">Match Sizes</span><span class="font-kbd-shortcut text-kbd-shortcut px-1.5 py-0.5 rounded bg-[#1c1e22] text-palette-rose border border-[#282a30]">Alt + S</span></div><p class="font-body-sm text-body-sm text-on-surface-variant mt-1 leading-relaxed"><strong class="text-on-surface font-semibold">Match Sizes</strong>: 여러 개의 타이를 함께 선택했을 때 타이블럭들의 너비와 크기를 균일하게 일치시켜 정렬합니다.</p></div><div class="rounded-xl bg-[#16181b] p-space-md flex flex-col gap-1 border border-[#282a30]"><div class="flex items-center justify-between"><span class="font-headline-sm text-headline-sm text-on-surface flex items-center gap-1.5 font-bold">Rotate</span><span class="font-kbd-shortcut text-kbd-shortcut px-1.5 py-0.5 rounded bg-[#1c1e22] text-on-surface font-bold border border-[#282a30]">R</span></div><p class="font-body-sm text-body-sm text-on-surface-variant mt-1 leading-relaxed"><strong class="text-on-surface font-semibold">Rotate (R)</strong>: 마우스 드래그로 타이 각도를 자유롭게 회전(자유 각도 회전)시켜 전선의 유입/유출 방향에 맞게 하네스 각도를 조절합니다.</p></div><div class="rounded-xl bg-[#16181b] p-space-md flex flex-col gap-1 border border-[#282a30]"><div class="flex items-center justify-between"><span class="font-headline-sm text-headline-sm text-on-surface flex items-center gap-1.5 font-bold">Spacing</span><span class="font-kbd-shortcut text-kbd-shortcut px-1.5 py-0.5 rounded bg-[#1c1e22] text-on-surface font-bold border border-[#282a30]">S</span></div><p class="font-body-sm text-body-sm text-on-surface-variant mt-1 leading-relaxed"><strong class="text-on-surface font-semibold">Spacing (S)</strong>: 묶인 와이어들 사이의 간격을 조절하여 빽빽하거나 여유 있게 정돈합니다.</p></div><div class="rounded-xl bg-[#16181b] p-space-md flex flex-col gap-1 border border-[#282a30]"><div class="flex items-center justify-between"><span class="font-headline-sm text-headline-sm text-on-surface flex items-center gap-1.5 font-bold">Name</span><span class="font-kbd-shortcut text-kbd-shortcut px-1.5 py-0.5 rounded bg-[#1c1e22] text-palette-yellow font-bold border border-[#282a30]">N</span></div><p class="font-body-sm text-body-sm text-on-surface-variant mt-1 leading-relaxed"><strong class="text-on-surface font-semibold">Name (N)</strong>: 케이블 타이 하네스에 라벨 이름을 지정하거나 변경하여 노드 구획을 식별합니다.</p></div><div class="rounded-xl bg-[#16181b] p-space-md flex flex-col gap-1 border border-[#282a30]"><div class="flex items-center justify-between"><span class="font-headline-sm text-headline-sm text-on-surface flex items-center gap-1.5 font-bold">Color</span><span class="font-kbd-shortcut text-kbd-shortcut px-1.5 py-0.5 rounded bg-[#1c1e22] text-palette-yellow font-bold border border-[#282a30]">C</span></div><p class="font-body-sm text-body-sm text-on-surface-variant mt-1 leading-relaxed"><strong class="text-on-surface font-semibold">Color (C)</strong>: 타이와 결속 전선에 식별 컬러 태그를 부여하여 그룹별 시각적 구분을 돕습니다.</p></div><div class="md:col-span-2 rounded-xl bg-[#16181b] p-space-md flex flex-col sm:flex-row sm:items-center justify-between gap-space-sm border border-[#282a30] border-l-4 border-l-error"><div class="flex flex-col gap-0.5"><div class="flex items-center gap-2"><span class="font-headline-sm text-headline-sm text-on-surface font-bold">Remove Tie (X)</span></div><p class="font-body-sm text-body-sm text-on-surface-variant">전선 연결은 그대로 보존하면서 타이만 디졸브(해제)합니다. 연결 흐름이 끊기지 않습니다.</p></div><span class="font-kbd-shortcut text-kbd-shortcut px-2 py-1 rounded bg-[#1c1e22] text-error font-bold border border-[#282a30] shrink-0">X (타이만 제거)</span></div></div></div></div></section>
+<!-- SECTION 3: INTERACTIVE KEYMAP & WORKFLOW CHEAT SHEET -->
+<section class="w-full py-space-xl bg-[#0c0d0f]" id="keymap">
+<div class="w-full max-w-7xl mx-auto px-margin md:px-margin-tablet lg:px-margin-desktop flex flex-col gap-space-lg">
+<!-- Keymap Header with Live Search Filter -->
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-space-md">
+<div class="flex flex-col gap-space-xs">
+<div class="flex items-center gap-2 font-label-sm text-label-sm text-palette-rose font-medium">
+<span class="material-symbols-outlined text-[16px]">keyboard_alt</span>
+<span class="">모달 오퍼레이터 &amp; 단축키 안내</span>
+</div>
+<h2 class="font-headline-lg text-headline-lg text-on-surface font-bold">인터랙티브 단축키 &amp; 키맵 매트릭스</h2>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-lg font-normal">
+            Shader, Geometry, Compositing 노드 에디터를 위한 빠른 조작 레퍼런스
+          </p>
+</div>
+<!-- Filter & Search Controls -->
+</div>
+<!-- Keymap Table Container -->
+<div class="w-full rounded-2xl bg-[#111316] overflow-hidden shadow-xl border border-[#282a30]">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse" id="keymap-table">
+<thead>
+<tr class="bg-[#16181b] text-on-surface-variant font-label-sm text-label-sm uppercase tracking-wider select-none border-b border-[#282a30]">
+<th class="py-3 px-space-md font-semibold">기능 / 동작</th>
+<th class="py-3 px-space-md font-semibold">단축키</th>
+<th class="py-3 px-space-md font-semibold">적용 컨텍스트</th>
+<th class="py-3 px-space-md text-right font-semibold">세부 동작 설명</th>
+</tr>
+</thead>
+<tbody class="font-body-md text-body-md" id="keymap-tbody"><tr class="keymap-row hover:bg-[#1c1e22] transition-colors border-b border-[#282a30]/50" data-category="creation" data-keyword="hold z drag across wires 와이어 결속 제스처 스트로크"><td class="py-3.5 px-space-md"><div class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-palette-mint"></span><span class="font-semibold text-on-surface">Hold Z and drag across wires (와이어 결속)</span></div></td><td class="py-3.5 px-space-md"><div class="flex items-center gap-1.5 font-kbd-shortcut text-kbd-shortcut"><kbd class="px-2 py-1 rounded bg-[#1c1e22] text-on-surface shadow-sm border border-[#282a30]">Z (Hold)</kbd><span class="text-on-surface-variant font-label-sm text-label-sm">+</span><kbd class="px-2 py-1 rounded bg-[#1c1e22] text-on-surface shadow-sm border border-[#282a30]">드래그</kbd></div></td><td class="py-3.5 px-space-md"><span class="px-2 py-0.5 rounded bg-[#1c1e22] text-palette-mint font-label-sm text-label-sm border border-[#282a30] font-medium">노드 에디터</span></td><td class="py-3.5 px-space-md text-right font-label-sm text-label-sm text-on-surface-variant">교차 와이어들을 가로질러 케이블 타이 결속</td></tr><tr class="keymap-row hover:bg-[#1c1e22] transition-colors bg-[#16181b]/40 border-b border-[#282a30]/50" data-category="transform" data-keyword="match sizes 크기 일치 너비 통일 alt s"><td class="py-3.5 px-space-md"><div class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-palette-rose"></span><span class="font-semibold text-on-surface">Match Sizes (타이 크기 일치)</span></div></td><td class="py-3.5 px-space-md"><div class="flex items-center gap-1.5 font-kbd-shortcut text-kbd-shortcut"><kbd class="px-2 py-1 rounded bg-[#1c1e22] text-on-surface shadow-sm border border-[#282a30]">Alt</kbd><span class="text-on-surface-variant font-label-sm text-label-sm">+</span><kbd class="px-2 py-1 rounded bg-[#1c1e22] text-on-surface shadow-sm border border-[#282a30]">S</kbd></div></td><td class="py-3.5 px-space-md"><span class="px-2 py-0.5 rounded bg-[#1c1e22] text-palette-rose font-label-sm text-label-sm border border-[#282a30] font-medium">다중 선택</span></td><td class="py-3.5 px-space-md text-right font-label-sm text-label-sm text-on-surface-variant">선택된 타이들의 크기와 너비를 균일화</td></tr><tr class="keymap-row hover:bg-[#1c1e22] transition-colors border-b border-[#282a30]/50" data-category="transform" data-keyword="rotate 회전 r 자유 회전 마우스 드래그 free rotation orientation"><td class="py-3.5 px-space-md"><div class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-palette-rose"></span><span class="font-semibold text-on-surface">Rotate (회전)</span></div></td><td class="py-3.5 px-space-md"><kbd class="px-2 py-1 rounded bg-[#1c1e22] text-on-surface font-kbd-shortcut text-kbd-shortcut shadow-sm border border-[#282a30]">R</kbd></td><td class="py-3.5 px-space-md"><span class="px-2 py-0.5 rounded bg-[#1c1e22] text-palette-rose font-label-sm text-label-sm border border-[#282a30] font-medium">활성 타이</span></td><td class="py-3.5 px-space-md text-right font-label-sm text-label-sm text-on-surface-variant">타이 각도 자유 회전 (마우스 드래그로 자유롭게 회전)</td></tr><tr class="keymap-row hover:bg-[#1c1e22] transition-colors bg-[#16181b]/40 border-b border-[#282a30]/50" data-category="transform" data-keyword="spacing 간격 s distance 와이어"><td class="py-3.5 px-space-md"><div class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-palette-rose"></span><span class="font-semibold text-on-surface">Spacing (간격 조절)</span></div></td><td class="py-3.5 px-space-md"><kbd class="px-2 py-1 rounded bg-[#1c1e22] text-on-surface font-kbd-shortcut text-kbd-shortcut shadow-sm border border-[#282a30]">S</kbd></td><td class="py-3.5 px-space-md"><span class="px-2 py-0.5 rounded bg-[#1c1e22] text-palette-rose font-label-sm text-label-sm border border-[#282a30] font-medium">활성 타이</span></td><td class="py-3.5 px-space-md text-right font-label-sm text-label-sm text-on-surface-variant">번들 내부 와이어 사이 간격 확장/축소</td></tr><tr class="keymap-row hover:bg-[#1c1e22] transition-colors border-b border-[#282a30]/50" data-category="styling" data-keyword="name 라벨 이름 n title rename"><td class="py-3.5 px-space-md"><div class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-palette-yellow"></span><span class="font-semibold text-on-surface">Name (이름 지정)</span></div></td><td class="py-3.5 px-space-md"><kbd class="px-2 py-1 rounded bg-[#1c1e22] text-on-surface font-kbd-shortcut text-kbd-shortcut shadow-sm border border-[#282a30]">N</kbd></td><td class="py-3.5 px-space-md"><span class="px-2 py-0.5 rounded bg-[#1c1e22] text-palette-yellow font-label-sm text-label-sm border border-[#282a30] font-medium">활성 타이</span></td><td class="py-3.5 px-space-md text-right font-label-sm text-label-sm text-on-surface-variant">타이 라벨명 입력 및 식별자 설정</td></tr><tr class="keymap-row hover:bg-[#1c1e22] transition-colors bg-[#16181b]/40 border-b border-[#282a30]/50" data-category="styling" data-keyword="color 색상 c 컬러 태그 tint"><td class="py-3.5 px-space-md"><div class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-palette-yellow"></span><span class="font-semibold text-on-surface">Color (컬러 태그)</span></div></td><td class="py-3.5 px-space-md"><kbd class="px-2 py-1 rounded bg-[#1c1e22] text-on-surface font-kbd-shortcut text-kbd-shortcut shadow-sm border border-[#282a30]">C</kbd></td><td class="py-3.5 px-space-md"><span class="px-2 py-0.5 rounded bg-[#1c1e22] text-palette-yellow font-label-sm text-label-sm border border-[#282a30] font-medium">활성 타이</span></td><td class="py-3.5 px-space-md text-right font-label-sm text-label-sm text-on-surface-variant">타이 컬러 및 와이어 틴트 순환 변경</td></tr><tr class="keymap-row hover:bg-[#1c1e22] transition-colors border-b border-[#282a30]/50" data-category="creation" data-keyword="remove tie x 해제 삭제 타이 제거 dissolve"><td class="py-3.5 px-space-md"><div class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-error"></span><span class="font-semibold text-on-surface">Remove Tie (타이 제거)</span></div></td><td class="py-3.5 px-space-md"><kbd class="px-2 py-1 rounded bg-[#1c1e22] text-error font-kbd-shortcut text-kbd-shortcut shadow-sm font-bold border border-[#282a30]">X</kbd></td><td class="py-3.5 px-space-md"><span class="px-2 py-0.5 rounded bg-[#1c1e22] text-error font-label-sm text-label-sm border border-[#282a30] font-medium">선택된 타이</span></td><td class="py-3.5 px-space-md text-right font-label-sm text-label-sm text-on-surface-variant">연결을 유지한 채 타이만 해제 (Dissolve)</td></tr><tr class="keymap-row hover:bg-[#1c1e22] transition-colors bg-[#16181b]/40" data-category="transform" data-keyword="grab g 이동 동기화 move sync"><td class="py-3.5 px-space-md"><div class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-palette-mint"></span><span class="font-semibold text-on-surface">Grab (노드 및 타이 이동)</span></div></td><td class="py-3.5 px-space-md"><kbd class="px-2 py-1 rounded bg-[#1c1e22] text-on-surface font-kbd-shortcut text-kbd-shortcut shadow-sm border border-[#282a30]">G</kbd></td><td class="py-3.5 px-space-md"><span class="px-2 py-0.5 rounded bg-[#1c1e22] text-palette-mint font-label-sm text-label-sm border border-[#282a30] font-medium">전역 노드 그래프</span></td><td class="py-3.5 px-space-md text-right font-label-sm text-label-sm text-on-surface-variant">블렌더 기본 조작과 동일하게 노드 및 타이 동기화 이동</td></tr></tbody>
+</table>
+</div>
+<!-- Empty State for Search -->
+<div class="hidden p-space-xl text-center flex-col items-center justify-center gap-2" id="keymap-empty-state">
+<span class="material-symbols-outlined text-[32px] text-on-surface-variant">search_off</span>
+<p class="font-body-md text-body-md text-on-surface-variant">일치하는 단축키를 찾을 수 없습니다. 검색어를 변경해 보세요.</p>
+</div>
+</div>
+</div>
+</section>
+<!-- SECTION 4: INSTALLATION & SETUP GUIDE (4-Step Visual Workflow) -->
+<section class="w-full py-space-xl bg-[#111316]" id="installation">
+<div class="w-full max-w-7xl mx-auto px-margin md:px-margin-tablet lg:px-margin-desktop flex flex-col gap-space-lg">
+<!-- Section Title -->
+<div class="flex flex-col gap-space-xs">
+<div class="flex items-center gap-2 font-label-sm text-label-sm text-palette-mint font-medium">
+<span class="material-symbols-outlined text-[16px]">install_desktop</span>
+<span class="">빠른 시작 가이드</span>
+</div>
+<h2 class="font-headline-lg text-headline-lg text-on-surface font-bold">60초 빠른 설치 가이드</h2>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-xl font-normal">
+          외부 라이브러리 설치 필요 없음. 블렌더 공식 버전에 즉시 설치 가능.
+        </p>
+</div>
+<!-- 4-Step Linear Flow Cards -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-space-md relative">
+<!-- Step 1 -->
+<div class="rounded-2xl bg-[#16181b] p-space-md flex flex-col gap-space-sm relative shadow-md border border-[#282a30]">
+<div class="flex items-center justify-between">
+<span class="w-8 h-8 rounded-lg bg-[#1c1e22] text-palette-mint font-label-md text-label-md font-bold flex items-center justify-center border border-[#282a30]">01</span>
+<span class="material-symbols-outlined text-[18px] text-on-surface-variant">download_for_offline</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface font-bold">릴리즈 다운로드</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant flex-1 leading-relaxed">
+            GitHub Releases에서 최신 아카이브 <a class="font-code-inline text-code-inline text-palette-mint hover:underline bg-[#1c1e22] px-1 rounded border border-[#282a30]" href="https://github.com/narznarz/TieRZ/releases/latest" target="_blank">TieRZ-v1.2.0.zip</a>을 직접 다운로드하세요. (.zip 압축 해제 불필요)
+          </p>
+<div class="mt-2 p-2 rounded bg-[#0c0d0f] font-label-sm text-[11px] text-on-surface-variant flex items-center gap-1.5 border border-[#282a30]">
+<span class="material-symbols-outlined text-[14px] text-palette-yellow">check</span>
+<span class="">.zip 파일 형태 유지</span>
+</div>
+</div>
+<!-- Step 2 -->
+<div class="rounded-2xl bg-[#16181b] p-space-md flex flex-col gap-space-sm relative shadow-md border border-[#282a30]">
+<div class="flex items-center justify-between">
+<span class="w-8 h-8 rounded-lg bg-[#1c1e22] text-palette-rose font-label-md text-label-md font-bold flex items-center justify-center border border-[#282a30]">02</span>
+<span class="material-symbols-outlined text-[18px] text-on-surface-variant">settings</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface font-bold">환경설정 열기</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant flex-1 leading-relaxed">
+            블렌더 상단 메뉴에서 <br>
+<span class="font-medium text-on-surface">Edit &gt; Preferences... &gt; Add-ons</span>(또는 4.2+ / 5.x의 Get Extensions)로 이동 후 <strong class="text-palette-rose font-semibold">Install...</strong>을 클릭합니다.
+          </p>
+<div class="mt-2 p-2 rounded bg-[#0c0d0f] font-label-sm text-[11px] text-on-surface-variant flex items-center gap-1.5 border border-[#282a30]">
+<span class="material-symbols-outlined text-[14px] text-palette-rose">mouse</span>
+<span class="">대상: 환경설정창</span>
+</div>
+</div>
+<!-- Step 3 -->
+<div class="rounded-2xl bg-[#16181b] p-space-md flex flex-col gap-space-sm relative shadow-md border border-[#282a30]">
+<div class="flex items-center justify-between">
+<span class="w-8 h-8 rounded-lg bg-[#1c1e22] text-palette-yellow font-label-md text-label-md font-bold flex items-center justify-center border border-[#282a30]">03</span>
+<span class="material-symbols-outlined text-[18px] text-on-surface-variant">check_box</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface font-bold">애드온 활성화</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant flex-1 leading-relaxed">
+            검색창에서 <code class="font-code-inline text-code-inline text-palette-yellow bg-[#1c1e22] px-1 rounded border border-[#282a30]">TieRZ</code>를 검색하고 체크박스를 활성화하여 오퍼레이터 훅과 HUD 모달을 켭니다.
+          </p>
+<div class="mt-2 p-2 rounded bg-[#0c0d0f] font-label-sm text-[11px] text-on-surface-variant flex items-center gap-1.5 border border-[#282a30]">
+<span class="material-symbols-outlined text-[14px] text-palette-yellow">toggle_on</span>
+<span class="">Node: TieRZ v1.2.0</span>
+</div>
+</div>
+<!-- Step 4 -->
+<div class="rounded-2xl bg-[#16181b] p-space-md flex flex-col gap-space-sm relative shadow-md border border-[#282a30]">
+<div class="flex items-center justify-between">
+<span class="w-8 h-8 rounded-lg bg-[#1c1e22] text-palette-mint font-label-md text-label-md font-bold flex items-center justify-center border border-[#282a30]">04</span>
+<span class="material-symbols-outlined text-[18px] text-on-surface-variant">view_sidebar</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface font-bold">사이드바 [N] 확인</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant flex-1 leading-relaxed">
+            Shader 또는 Geometry 에디터에서 키보드의 <kbd class="px-1.5 py-0.5 rounded bg-[#1c1e22] font-kbd-shortcut text-kbd-shortcut text-on-surface border border-[#282a30]">N</kbd> 키를 눌러 새롭게 추가된 <strong class="text-palette-mint font-semibold">TieRZ</strong> 탭을 확인하세요.
+          </p>
+<div class="mt-2 p-2 rounded bg-[#0c0d0f] font-label-sm text-[11px] text-on-surface-variant flex items-center gap-1.5 border border-[#282a30]">
+<span class="material-symbols-outlined text-[14px] text-palette-mint">play_arrow</span>
+<span class="">Z+드래그 제스처 준비 완료</span>
+</div>
+</div>
+</div>
+<!-- Quick Verifier Console Terminal -->
+
+</div>
+</section>
+<!-- SECTION 5: WARNINGS, BEST PRACTICES & TROUBLESHOOTING -->
+
+<!-- SECTION 6: LINEAGE, CREDITS & OPEN SOURCE ECOSYSTEM -->
+<section class="w-full py-space-xl bg-[#0c0d0f] border-t border-[#282a30]" id="release-notes"><div class="w-full max-w-7xl mx-auto px-margin md:px-margin-tablet lg:px-margin-desktop flex flex-col gap-space-xl">
+<!-- Evolution Lineage Timeline Component -->
+
+<!-- Credits, Copyright & Legal GitHub Style Repository Info -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-space-md p-space-lg rounded-2xl bg-[#16181b] shadow-md border border-[#282a30]">
+<div class="flex flex-col gap-1">
+<span class="text-[11px] text-on-surface-variant uppercase font-medium">원작 컨셉 영감</span>
+<p class="font-body-md text-body-md text-on-surface leading-relaxed">
+<strong class="text-palette-rose font-medium">NODE ZIP TIE</strong>의 선구적인 아이디어에서 출발했습니다. 오리지널 제작진과 커뮤니티 테스터 분들께 깊이 감사드립니다.
+      </p>
+</div>
+<div class="flex flex-col gap-1"><div class="flex items-center justify-between"><span class="text-[11px] text-on-surface-variant uppercase font-medium">캐릭터 &amp; 브랜딩</span><span class="px-2 py-0.2 rounded text-[10px] bg-palette-rose/25 text-palette-rose border border-palette-rose/25">Official Mascot</span></div><div class="flex items-center gap-space-sm mt-1"><img alt="MACHOCAT" class="w-10 h-10 rounded-full border border-palette-mint/50 bg-[#0c0d0f] p-0.5 object-contain shrink-0 shadow-md" src="assets/7_macho_shy.png"><p class="font-body-md text-body-md text-on-surface leading-relaxed"><strong class="text-palette-mint font-semibold">MACHOCAT</strong> 마스코트 캐릭터 저작권 <span class="font-medium text-palette-yellow">© NARZ &amp; 박냥냥</span>. Machocat 개발 및 유지보수.</p></div></div>
+<div class="flex flex-col gap-1">
+<span class="text-[11px] text-on-surface-variant uppercase font-medium">오픈소스 라이선스</span>
+<p class="font-body-md text-body-md text-on-surface leading-relaxed">
+<strong class="text-palette-mint font-medium">GNU General Public License v3.0 (GPL-3.0-or-later)</strong>에 따라 배포됩니다. 개인 및 상업적 3D 프로덕션에서 자유롭게 무료로 사용 가능합니다.
+      </p>
+</div>
+</div>
+<!-- FINAL CTA DOWNLOAD BANNER -->
+<div class="w-full rounded-2xl bg-gradient-to-r from-[#16181b] via-[#1c1e22] to-[#16181b] p-space-lg md:p-space-xl flex flex-col lg:flex-row items-center justify-between gap-space-lg shadow-2xl relative overflow-hidden border border-[#282a30]" id="download-release">
+<div class="absolute -right-16 -bottom-16 w-80 h-80 bg-palette-mint/10 rounded-full blur-3xl pointer-events-none"></div>
+<div class="flex flex-col gap-space-xs text-center lg:text-left z-10">
+<div class="inline-flex items-center justify-center lg:justify-start gap-2 text-palette-yellow text-[11px]">
+<span class="w-2 h-2 rounded-full bg-palette-yellow animate-pulse"></span>
+<span class="">안정화 프로덕션 릴리즈 • SHA-256 검증 완료 • GPL-3.0</span>
+</div>
+<h3 class="font-headline-lg text-headline-lg text-on-surface font-bold">
+        블렌더 노드 그래프를 깔끔하게 정리할 준비가 되셨나요?
+      </h3>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-xl font-normal leading-relaxed">
+        TieRZ v1.2.0 zip 아카이브를 다운로드하여 지금 바로 셰이더, 컴포지터, 지오메트리 노드 트리에 물리적인 케이블 타이를 장착해 보세요.
+      </p>
+</div>
+<div class="flex flex-col sm:flex-row items-center gap-space-sm z-10 w-full lg:w-auto justify-end">
+<a class="w-full sm:w-auto flex items-center justify-center gap-2 px-space-lg py-3.5 rounded-xl bg-palette-mint hover:bg-palette-mint/90 text-[#0c0d0f] font-label-md text-label-md font-bold shadow-lg shadow-palette-mint/25 transition-all" download="TieRZ-v1.2.0.zip" href="https://github.com/narznarz/TieRZ/releases/latest" target="_blank">
+<span class="material-symbols-outlined text-[20px]">download</span>
+<span class="">TieRZ-v1.2.0.zip 다운로드</span>
+</a>
+
+</div>
+</div>
+</div></section>
+<!-- Interactive Logic Script -->
+<script>
+    // 1. Toggle Spaghetti vs. Clamped TieRZ Viewport
+    function toggleViewportMode(mode) {
+      const realComparison = document.getElementById('real-comparison-view');
+      const btnSpaghetti = document.getElementById('view-spaghetti-btn');
+      const btnBundled = document.getElementById('view-bundled-btn');
+      const cards = realComparison.children;
+
+      if (mode === 'spaghetti') {
+        cards[0].classList.remove('hidden');
+        cards[1].classList.add('hidden');
+        realComparison.className = 'grid grid-cols-1 gap-space-md';
+        btnSpaghetti.className = 'px-2.5 py-1 rounded bg-[#16181b] text-on-surface font-label-sm text-label-sm font-semibold transition-all shadow-sm border border-[#282a30]';
+        btnBundled.className = 'px-2.5 py-1 rounded text-on-surface-variant font-label-sm text-label-sm transition-all hover:text-on-surface font-medium';
+      } else {
+        cards[0].classList.remove('hidden');
+        cards[1].classList.remove('hidden');
+        realComparison.className = 'grid grid-cols-1 md:grid-cols-2 gap-space-md';
+        btnBundled.className = 'px-2.5 py-1 rounded bg-palette-mint text-[#0c0d0f] font-label-sm text-label-sm font-semibold transition-all shadow-sm';
+        btnSpaghetti.className = 'px-2.5 py-1 rounded text-on-surface-variant font-label-sm text-label-sm transition-all hover:text-on-surface font-medium';
+      }
+    }
+
+    // 2. Interactive Tie Label Sync
+    function updateTiePreviewName(val) {
+      const label1 = document.getElementById('mock-tie-1-label');
+      if (label1) {
+        label1.innerText = val.trim() ? '#' + val.replace(/^#/, '') : '#Custom_Tie';
+      }
+    }
+
+    // 3. Interactive Tie Color Selector
+    function setTieColor(color) {
+      const label1 = document.getElementById('mock-tie-1-label');
+      if (!label1) return;
+      const parentBadge = label1.parentElement;
+
+      parentBadge.classList.remove('bg-palette-mint', 'text-[#0c0d0f]', 'bg-palette-rose', 'text-white', 'bg-palette-yellow', 'text-[#0c0d0f]', 'bg-error', 'text-on-error');
+
+      if (color === 'orange' || color === 'mint') {
+        parentBadge.classList.add('bg-palette-mint', 'text-[#0c0d0f]');
+      } else if (color === 'cyan' || color === 'rose') {
+        parentBadge.classList.add('bg-palette-rose', 'text-white');
+      } else if (color === 'citron' || color === 'yellow') {
+        parentBadge.classList.add('bg-palette-yellow', 'text-[#0c0d0f]');
+      } else if (color === 'crimson') {
+        parentBadge.classList.add('bg-error', 'text-on-error');
+      }
+    }
+
+    // 4. Clean Data Toast / Notice Simulator
+    function simulateCleanData() {
+      const btn = event.currentTarget;
+      const originalText = btn.innerHTML;
+      btn.innerHTML = '<span class="material-symbols-outlined text-[14px] text-palette-mint animate-spin">sync</span><span>순정 리라우트로 복원 중...</span>';
+      setTimeout(() => {
+        btn.innerHTML = '<span class="material-symbols-outlined text-[14px] text-palette-mint">done</span><span>모든 데이터 복원 완료!</span>';
+        setTimeout(() => {
+          btn.innerHTML = originalText;
+        }, 2200);
+      }, 700);
+    }
+
+    // 5. Keymap Filter & Search Engine
+    let currentCategory = 'all';
+
+    function setKeymapFilter(category) {
+      currentCategory = category;
+      const buttons = document.querySelectorAll('.keymap-filter-btn');
+      buttons.forEach(b => {
+        b.className = 'keymap-filter-btn px-3 py-2 rounded-xl bg-[#16181b] hover:bg-[#1c1e22] text-on-surface-variant font-label-sm text-label-sm transition-all border border-[#282a30] font-medium';
+      });
+      event.currentTarget.className = 'keymap-filter-btn px-3 py-2 rounded-xl bg-palette-mint text-[#0c0d0f] font-label-sm text-label-sm font-semibold transition-all shadow-sm';
+      filterKeymap();
+    }
+
+    function filterKeymap() {
+      const query = (document.getElementById('keymap-search-input').value || '').toLowerCase().trim();
+      const rows = document.querySelectorAll('.keymap-row');
+      let visibleCount = 0;
+
+      rows.forEach(row => {
+        const cat = row.getAttribute('data-category');
+        const keywords = (row.getAttribute('data-keyword') + ' ' + row.innerText).toLowerCase();
+        
+        const matchesCategory = currentCategory === 'all' || cat === currentCategory;
+        const matchesQuery = !query || keywords.includes(query);
+
+        if (matchesCategory && matchesQuery) {
+          row.style.display = '';
+          visibleCount++;
+        } else {
+          row.style.display = 'none';
+        }
+      });
+
+      const emptyState = document.getElementById('keymap-empty-state');
+      if (visibleCount === 0) {
+        emptyState.classList.remove('hidden');
+        emptyState.classList.add('flex');
+      } else {
+        emptyState.classList.add('hidden');
+        emptyState.classList.remove('flex');
+      }
+    }
+
+    // 6. Copy Git Command
+    function copyCloneCommand() {
+      const input = document.getElementById('clone-cmd-input');
+      input.select();
+      navigator.clipboard.writeText(input.value);
+      const icon = document.getElementById('copy-icon');
+      const status = document.getElementById('copy-status');
+      icon.innerText = 'check';
+      status.innerText = '복사됨!';
+      setTimeout(() => {
+        icon.innerText = 'content_copy';
+        status.innerText = '복사';
+      }, 2000);
+    }
+
+    // 7. Language Toggle
+    function setAppLanguage(lang) {
+      const btnEn = document.getElementById('hero-btn-en');
+      const btnKo = document.getElementById('hero-btn-ko');
+      const navEn = document.getElementById('nav-lang-en');
+      const navKo = document.getElementById('nav-lang-ko');
+
+      if (lang === 'en') {
+        if (btnEn) btnEn.className = 'px-2.5 py-0.5 rounded-lg text-[#0c0d0f] bg-palette-mint font-label-sm text-label-sm font-semibold transition-all shadow-sm';
+        if (btnKo) btnKo.className = 'px-2.5 py-0.5 rounded-lg text-on-surface-variant hover:text-on-surface font-label-sm text-label-sm transition-all font-medium';
+        if (navEn) navEn.className = 'px-2 py-0.5 rounded bg-palette-mint text-[#0c0d0f] font-semibold shadow-sm';
+        if (navKo) navKo.className = 'px-2 py-0.5 rounded text-on-surface-variant hover:bg-[#16181b] hover:text-on-surface transition-colors font-medium';
+      } else {
+        if (btnKo) btnKo.className = 'px-2.5 py-0.5 rounded-lg text-[#0c0d0f] bg-palette-mint font-label-sm text-label-sm font-semibold transition-all shadow-sm';
+        if (btnEn) btnEn.className = 'px-2.5 py-0.5 rounded-lg text-on-surface-variant hover:text-on-surface font-label-sm text-label-sm transition-all font-medium';
+        if (navKo) navKo.className = 'px-2 py-0.5 rounded bg-palette-mint text-[#0c0d0f] font-semibold shadow-sm';
+        if (navEn) navEn.className = 'px-2 py-0.5 rounded text-on-surface-variant hover:bg-[#16181b] hover:text-on-surface transition-colors font-medium';
+      }
+    }
+  </script>
+</div></main><footer class="w-full bg-[#08090a] py-space-xl mt-space-xl border-t border-[#282a30]"><div class="w-full max-w-7xl mx-auto px-margin md:px-margin-tablet lg:px-margin-desktop"><div class="grid grid-cols-1 md:grid-cols-4 gap-space-lg mb-space-xl"><div class="md:col-span-2 flex flex-col gap-space-sm"><div class="flex items-center gap-space-sm"><div class="flex items-center gap-1.5 shrink-0"><img alt="MACHOCAT Mascot" class="w-7 h-7 rounded-full border border-palette-mint/40 bg-[#16181b] object-contain p-0.5 shadow-sm" src="assets/7_macho_shy.png"></div><span class="font-headline-sm text-headline-sm text-on-surface font-bold">TieRZ for Blender</span></div><p class="font-body-sm text-body-sm text-on-surface-variant max-w-md font-normal leading-relaxed">정밀 노드 케이블 타이 결속 및 라우팅 툴킷. 대규모 셰이딩 그래프, 지오메트리 네트워크, 컴포지팅 파이프라인을 손쉽고 직관적인 케이블 타이로 깔끔하게 정리하세요.</p><div class="flex flex-wrap items-center gap-space-xs text-[11px] text-on-surface-variant mt-space-xs"><span class="px-2 py-0.5 rounded bg-[#1c1e22] text-palette-yellow border border-[#282a30]">GPL-3.0 라이선스</span><span class="px-2 py-0.5 rounded bg-[#1c1e22] text-palette-rose border border-[#282a30]">Blender 4.0 ~ 5.4 Alpha</span><span class="px-2 py-0.5 rounded bg-[#1c1e22] text-on-surface-variant border border-[#282a30]">v1.2.0</span></div></div><div class="flex flex-col gap-space-xs"><span class="font-headline-sm text-[13px] text-on-surface font-bold uppercase tracking-wider mb-space-xs">바로가기</span><a class="font-body-sm text-body-sm text-on-surface-variant hover:text-on-surface transition-colors py-0.5" data-path="overview" href="#">개요</a><a class="font-body-sm text-body-sm text-on-surface-variant hover:text-on-surface transition-colors py-0.5" data-path="features" href="#features">주요 기능</a><a class="font-body-sm text-body-sm text-on-surface-variant hover:text-on-surface transition-colors py-0.5" data-path="interactive-keymap" href="#keymap">키맵 매트릭스</a><a class="font-body-sm text-body-sm text-on-surface-variant hover:text-on-surface transition-colors py-0.5" data-path="installation" href="#installation">설치 가이드</a><a class="font-body-sm text-body-sm text-on-surface-variant hover:text-on-surface transition-colors py-0.5" data-path="warnings-faq" href="#warnings-faq">주의사항 &amp; FAQ</a><a class="font-body-sm text-body-sm text-on-surface-variant hover:text-on-surface transition-colors py-0.5" data-path="release-notes" href="#release-notes">계보 &amp; 릴리즈</a></div><div class="flex flex-col gap-space-xs"><span class="font-headline-sm text-[13px] text-on-surface font-bold uppercase tracking-wider mb-space-xs">저작권 관련 문구</span><span class="font-body-sm text-body-sm text-on-surface-variant"><strong class="text-on-surface font-semibold">MachoCAT</strong>&nbsp;<span class="text-palette-yellow font-medium">NARZ &amp; 박냥냥</span></span><div class="flex flex-col gap-space-xs mt-space-sm"><a class="font-body-sm text-body-sm text-palette-mint hover:text-on-surface transition-colors flex items-center gap-1.5 py-0.5" href="https://github.com/narznarz/TieRZ" rel="noreferrer" target="_blank"><svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"></path></svg><span class="">GitHub 저장소 (★ 1.4k)</span></a><a class="font-body-sm text-body-sm text-palette-mint hover:text-on-surface transition-colors flex items-center gap-1.5 py-0.5" href="https://blenderartists.org" rel="noreferrer" target="_blank"></a><a class="font-body-sm text-body-sm text-palette-mint hover:text-on-surface transition-colors flex items-center gap-1.5 py-0.5" href="https://github.com/narznarz/TieRZ/issues" rel="noreferrer" target="_blank"></a></div></div></div><div class="pt-space-md border-t border-[#282a30] flex flex-col sm:flex-row items-center justify-between gap-space-sm font-label-sm text-label-sm text-on-surface-variant"><p class="">© 2026-2026 TieRZ Project. GNU General Public License v3.0 배포.</p></div></div></footer>
+
+
+</body></html>
