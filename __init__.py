@@ -3413,8 +3413,11 @@ def ui_selected_actions(layout,context):
     col.operator('tie.rz_color_popup',text=i18n_tr('Color (C)'),translate=False)
     remove_row = col.row()
     remove_row.alert = True
+    # The accelerator is the first unused letter in the menu, so "Remove Tie (X)"
+    # bound its menu key to T. Put X first so the menu honours the documented X
+    # shortcut while the label stays readable.
     remove_text = i18n_tr('Remove Tie' if len(chosen)==1 else 'Remove Ties')
-    remove_row.operator('tie.rz_delete',text=remove_text + ' (X)',translate=False)
+    remove_row.operator('tie.rz_delete',text='X  ' + remove_text,translate=False)
 
 
 class TRZ_PT_color_popover(bpy.types.Panel):

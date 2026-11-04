@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.18.45 (2026-11-05)
+
+### Fixed
+- **Right-click menu "Remove Tie" responded to `T` instead of `X`**: Blender picks a
+  menu item's accelerator letter as the first unused letter in its label, and in
+  `Remove Tie (X)` the `X` is consumed by earlier words, leaving `T`. The label now
+  leads with `X` (`X  Remove Tie`), so the menu honours the documented shortcut.
+  - Relabeled in all four languages (English, Korean, Chinese, Japanese).
+  - Removed the now-unused `Remove Tie (X)` / `Remove Ties (X)` translation entries.
+
 ## 0.18.44 (2026-11-05)
 
 ### Fixed

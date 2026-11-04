@@ -112,7 +112,5 @@
   "Name (N)": "名前 (N)",
   "Color (C)": "色 (C)",
   "Rotate (R)": "回転 (R)",
-  "Spacing (S)": "間隔 (S)",
-  "Remove Tie (X)": "タイを削除 (X)",
-  "Remove Ties (X)": "タイを削除 (X)"
+  "Spacing (S)": "間隔 (S)"
 }
