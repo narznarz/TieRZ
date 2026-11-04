@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.18.40 (2026-11-04)
+
+### Fixed
+- **Color and Tie Design dropdowns ignored the language setting**: `color_mode` and
+  `tie_style` used static `EnumProperty` item lists, which Blender registers once at
+  import time and never re-translates. They now build their items through dynamic
+  callbacks that call `i18n_tr()`, matching the forced-translation approach used by the
+  rest of the panel, so the labels follow the selected interface language immediately.
+
 ## 0.18.26 (2026-11-02)
 
 ### Fixed

@@ -1687,6 +1687,31 @@ class preferences_Defaults:
 preferences_DEFAULTS = preferences_Defaults()
 
 
+def preferences_color_mode_items(_self=None, _context=None):
+    """Enum item labels are pre-translated: Python enum items are registered
+    once, so Blender's automatic translation never picks them up. Building the
+    list through i18n_tr() forces the same lookup the rest of the UI uses and
+    re-evaluates on every redraw, so a language change takes effect at once."""
+    return [
+        ('RANDOM', i18n_tr('Random'), ''),
+        ('GREY', i18n_tr('Grayscale'), ''),
+        ('WIRES', i18n_tr('Match wire colors'), ''),
+    ]
+
+
+def preferences_tie_style_items(_self=None, _context=None):
+    """Translated tie design items; see preferences_color_mode_items()."""
+    return [
+        ('ORIGINAL', i18n_tr('Default'), i18n_tr('Current cable-tie design')),
+        ('INDUSTRIAL', i18n_tr('Industrial'),
+                      i18n_tr('Rounded body with subtle bevels and a compact lock')),
+        ('MINIMAL', i18n_tr('Minimal'), i18n_tr('Slim tie with a clean, low-detail lock')),
+        ('TECH', i18n_tr('Tech'), i18n_tr('Structured rails and small mechanical details')),
+        ('MACHOCAT', i18n_tr('MachoCAT'), i18n_tr('Minimal tie with a large Macho cat head')),
+        ('MUSIC', i18n_tr('Music Note'), i18n_tr('A musical note motif with a flowing flag')),
+    ]
+
+
 def preferences_update_key(self, context):
     interaction_remove_keymaps()
     interaction_add_keymaps()
@@ -1731,18 +1756,11 @@ class TRZ_Preferences(bpy.types.AddonPreferences):
     width: FloatProperty(name='Tie width', default=8, min=2, max=20,update=preferences_update_routes,
                          translation_context=i18n_DOMAIN)
     color_mode: EnumProperty(name='New tie color',
-        items=[('RANDOM','Random',''),('GREY','Grayscale',''),('WIRES','Match wire colors','')],
+        items=preferences_color_mode_items,
         translation_context=i18n_DOMAIN)
-    tie_style: EnumProperty(name='Tie Design',default='ORIGINAL',update=preferences_update_visibility,
+    tie_style: EnumProperty(name='Tie Design',update=preferences_update_visibility,
         translation_context=i18n_DOMAIN,
-        items=[
-            ('ORIGINAL','Default','Current cable-tie design'),
-            ('INDUSTRIAL','Industrial','Rounded body with subtle bevels and a compact lock'),
-            ('MINIMAL','Minimal','Slim tie with a clean, low-detail lock'),
-            ('TECH','Tech','Structured rails and small mechanical details'),
-            ('MACHOCAT','MachoCAT','Minimal tie with a large Macho cat head'),
-            ('MUSIC','Music Note','A musical note motif with a flowing flag'),
-        ])
+        items=preferences_tie_style_items)
     panel_syncing: BoolProperty(options={'HIDDEN'})
     synced_selection: StringProperty(default='', options={'HIDDEN'})
     selected_tie_name: StringProperty(name='Name',update=preferences_update_selected_name,
