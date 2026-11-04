@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.18.41 (2026-11-04)
+
+### Fixed
+- **Garbled labels in the Color / Tie Design dropdowns**: Blender's RNA layer mangles
+  non-ASCII text used directly as a Python `EnumProperty` item name, so the 0.18.40
+  pre-translated labels rendered as unreadable characters. Both dropdowns are now drawn
+  as menus whose entries pass `i18n_tr()` output as ordinary UI text (the path already
+  used by the rest of the panel), which renders Korean correctly.
+- Renamed the Korean labels: 회색, 와이어의 색상, 마초냥.
+
 ## 0.18.40 (2026-11-04)
 
 ### Fixed

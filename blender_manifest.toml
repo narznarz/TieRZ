@@ -1,6 +1,6 @@
 schema_version = "1.0.0"
 id = "tierz"
-version = "0.18.40"
+version = "0.18.41"
 name = "TieRZ"
 tagline = "like a cable tie"
 maintainer = "NARZ"

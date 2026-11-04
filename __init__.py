@@ -1687,31 +1687,6 @@ class preferences_Defaults:
 preferences_DEFAULTS = preferences_Defaults()
 
 
-def preferences_color_mode_items(_self=None, _context=None):
-    """Enum item labels are pre-translated: Python enum items are registered
-    once, so Blender's automatic translation never picks them up. Building the
-    list through i18n_tr() forces the same lookup the rest of the UI uses and
-    re-evaluates on every redraw, so a language change takes effect at once."""
-    return [
-        ('RANDOM', i18n_tr('Random'), ''),
-        ('GREY', i18n_tr('Grayscale'), ''),
-        ('WIRES', i18n_tr('Match wire colors'), ''),
-    ]
-
-
-def preferences_tie_style_items(_self=None, _context=None):
-    """Translated tie design items; see preferences_color_mode_items()."""
-    return [
-        ('ORIGINAL', i18n_tr('Default'), i18n_tr('Current cable-tie design')),
-        ('INDUSTRIAL', i18n_tr('Industrial'),
-                      i18n_tr('Rounded body with subtle bevels and a compact lock')),
-        ('MINIMAL', i18n_tr('Minimal'), i18n_tr('Slim tie with a clean, low-detail lock')),
-        ('TECH', i18n_tr('Tech'), i18n_tr('Structured rails and small mechanical details')),
-        ('MACHOCAT', i18n_tr('MachoCAT'), i18n_tr('Minimal tie with a large Macho cat head')),
-        ('MUSIC', i18n_tr('Music Note'), i18n_tr('A musical note motif with a flowing flag')),
-    ]
-
-
 def preferences_update_key(self, context):
     interaction_remove_keymaps()
     interaction_add_keymaps()
@@ -1756,11 +1731,16 @@ class TRZ_Preferences(bpy.types.AddonPreferences):
     width: FloatProperty(name='Tie width', default=8, min=2, max=20,update=preferences_update_routes,
                          translation_context=i18n_DOMAIN)
     color_mode: EnumProperty(name='New tie color',
-        items=preferences_color_mode_items,
-        translation_context=i18n_DOMAIN)
-    tie_style: EnumProperty(name='Tie Design',update=preferences_update_visibility,
-        translation_context=i18n_DOMAIN,
-        items=preferences_tie_style_items)
+        items=[('RANDOM','Random',''),('GREY','Grayscale',''),('WIRES','Match wire colors','')])
+    tie_style: EnumProperty(name='Tie Design',default='ORIGINAL',update=preferences_update_visibility,
+        items=[
+            ('ORIGINAL','Default','Current cable-tie design'),
+            ('INDUSTRIAL','Industrial','Rounded body with subtle bevels and a compact lock'),
+            ('MINIMAL','Minimal','Slim tie with a clean, low-detail lock'),
+            ('TECH','Tech','Structured rails and small mechanical details'),
+            ('MACHOCAT','MachoCAT','Minimal tie with a large Macho cat head'),
+            ('MUSIC','Music Note','A musical note motif with a flowing flag'),
+        ])
     panel_syncing: BoolProperty(options={'HIDDEN'})
     synced_selection: StringProperty(default='', options={'HIDDEN'})
     selected_tie_name: StringProperty(name='Name',update=preferences_update_selected_name,
@@ -3068,7 +3048,35 @@ def interaction_remove_keymaps():
     interaction_keymaps.clear()
 
 
-interaction_classes = [TRZ_OT_hover,TRZ_OT_gesture,TRZ_OT_pick,TRZ_OT_circle_clear_ties,TRZ_OT_move,TRZ_OT_scale,TRZ_OT_match_scale,TRZ_OT_rotate,TRZ_OT_name,TRZ_OT_color,TRZ_OT_color_popup,TRZ_OT_delete,TRZ_OT_edit,TRZ_OT_cleanup_addon_data,TRZ_OT_box,TRZ_OT_move_nodes]
+class TRZ_OT_set_tie_style(bpy.types.Operator):
+    """Pick a tie design from the translated menu."""
+    bl_idname = 'tie.rz_set_tie_style'
+    bl_label = 'Set Tie Design'
+    bl_options = {'INTERNAL'}
+    style: StringProperty()
+
+    def execute(self,context):
+        options = preferences_prefs(context)
+        if getattr(options,'tie_style','ORIGINAL') != self.style:
+            options.tie_style = self.style
+        return {'FINISHED'}
+
+
+class TRZ_OT_set_color_mode(bpy.types.Operator):
+    """Pick a new-tie color mode from the translated menu."""
+    bl_idname = 'tie.rz_set_color_mode'
+    bl_label = 'Set Color Mode'
+    bl_options = {'INTERNAL'}
+    mode: StringProperty()
+
+    def execute(self,context):
+        options = preferences_prefs(context)
+        if getattr(options,'color_mode','RANDOM') != self.mode:
+            options.color_mode = self.mode
+        return {'FINISHED'}
+
+
+interaction_classes = [TRZ_OT_hover,TRZ_OT_gesture,TRZ_OT_pick,TRZ_OT_circle_clear_ties,TRZ_OT_move,TRZ_OT_scale,TRZ_OT_match_scale,TRZ_OT_rotate,TRZ_OT_name,TRZ_OT_color,TRZ_OT_color_popup,TRZ_OT_delete,TRZ_OT_edit,TRZ_OT_cleanup_addon_data,TRZ_OT_box,TRZ_OT_move_nodes,TRZ_OT_set_tie_style,TRZ_OT_set_color_mode]
 
 
 # ==========================================================================
@@ -3406,6 +3414,61 @@ class TRZ_MT_context(bpy.types.Menu):
         ui_selected_actions(layout,context)
 
 
+ui_COLOR_MODE_ITEMS = (
+    ('RANDOM','Random'),
+    ('GREY','Grayscale'),
+    ('WIRES','Match wire colors'),
+)
+ui_TIE_STYLE_ITEMS = (
+    ('ORIGINAL','Default'),
+    ('INDUSTRIAL','Industrial'),
+    ('MINIMAL','Minimal'),
+    ('TECH','Tech'),
+    ('MACHOCAT','MachoCAT'),
+    ('MUSIC','Music Note'),
+)
+
+
+def ui__translated_label(items,value):
+    """Label for the active enum value, translated through i18n_tr().
+
+    The two preference dropdowns are drawn as menus instead of
+    layout.prop(): Blender mangles non-ASCII text that is used directly as a
+    Python EnumProperty item name, so the translated string is passed as
+    ordinary UI text here, exactly like the rest of the panel.
+    """
+    for key,label in items:
+        if key == value:
+            return i18n_tr(label)
+    return i18n_tr(items[0][1])
+
+
+class TRZ_MT_color_mode(bpy.types.Menu):
+    bl_label = 'New Tie Color'
+
+    def draw(self,context):
+        options = preferences_prefs(context)
+        current = getattr(options,'color_mode','RANDOM')
+        for value,label in ui_COLOR_MODE_ITEMS:
+            op = self.layout.operator('tie.rz_set_color_mode',text=i18n_tr(label),
+                                      translate=False,
+                                      icon='CHECKMARK' if value == current else 'BLANK1')
+            op.mode = value
+
+
+class TRZ_MT_tie_style(bpy.types.Menu):
+    bl_label = 'Tie Design'
+
+    def draw(self,context):
+        options = preferences_prefs(context)
+        current = getattr(options,'tie_style','ORIGINAL')
+        for value,label in ui_TIE_STYLE_ITEMS:
+            op = self.layout.operator('tie.rz_set_tie_style',text=i18n_tr(label),
+                                      translate=False,
+                                      icon='CHECKMARK' if value == current else 'BLANK1')
+            op.style = value
+
+
 class TRZ_PT_panel(bpy.types.Panel):
     bl_label = 'TieRZ'
     bl_space_type = 'NODE_EDITOR'
@@ -3466,7 +3529,9 @@ class TRZ_PT_panel(bpy.types.Panel):
         appearance.prop(options,'show_ties_in_front',text=i18n_tr('Show Ties In Front of Nodes'),translate=False)
         design_split = appearance.split(factor=0.5,align=True)
         design_split.label(text=i18n_tr('Tie Design'),translate=False)
-        design_split.prop(options,'tie_style',text='')
+        design_split.menu('TRZ_MT_tie_style',
+                          text=ui__translated_label(ui_TIE_STYLE_ITEMS,options.tie_style),
+                          translate=False)
         dimensions = appearance.row(align=True)
         if chosen:
             dimensions.prop(options,'selected_tie_spacing',text=i18n_tr('Spacing'),translate=False)
@@ -3475,7 +3540,9 @@ class TRZ_PT_panel(bpy.types.Panel):
         dimensions.prop(options,'width',text=i18n_tr('Width'),translate=False)
         color = appearance.row(align=True)
         color.label(text=i18n_tr('New Tie Color'),translate=False)
-        color.prop(options,'color_mode',text='')
+        color.menu('TRZ_MT_color_mode',
+                   text=ui__translated_label(ui_COLOR_MODE_ITEMS,options.color_mode),
+                   translate=False)
 
         layout.separator()
         maintenance = layout.box()
@@ -3502,7 +3569,7 @@ def ui_context_menu(self,context):
         self.layout.menu('TRZ_MT_context',text='TieRZ')
 
 
-ui_classes = [TRZ_MT_context,TRZ_PT_color_popover,TRZ_PT_panel]
+ui_classes = [TRZ_MT_context,TRZ_MT_color_mode,TRZ_MT_tie_style,TRZ_PT_color_popover,TRZ_PT_panel]
 
 
 # ==========================================================================
