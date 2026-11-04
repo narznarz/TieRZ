@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.18.46 (2026-11-05)
+
+### Changed
+- **Right-click / N-panel menu labels now lead with their shortcut key**: all entries use
+  the `(key) Label` form — `(R) Rotate`, `(S) Spacing`, `(N) Name`, `(C) Color`,
+  `(X) Remove Tie` — so the menu accelerator always matches the documented shortcut.
+
+### Added
+- **(G) Move** entry in the right-click menu: moves the selected ties (and any selected
+  nodes) together, the same action as pressing `G`.
+
 ## 0.18.45 (2026-11-05)
 
 ### Fixed

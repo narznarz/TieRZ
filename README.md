@@ -52,7 +52,7 @@ TieRZ allows customizing tie designs via the N-panel. In addition to clean stand
 - **Create a tie**: hold the gesture key (default `Z`) and drag across wires.
 - **Move a tie**: click a tie and drag it to reposition it; hold `Shift` while dragging to rotate it freely.
 - **Remove ties with a stroke**: hold the gesture key (default `Z`) and draw a line across ties — every crossed tie highlights in red and is removed when you release (multiple ties at once). Reroute helpers are kept.
-- **Right-click menu** (on a selected tie): Rotate (R) / Spacing (S) / Name (N) / Color (C) / Remove (X).
+- **Right-click menu** (on a selected tie): (R) Rotate / (S) Spacing / (N) Name / (C) Color / (G) Move / (X) Remove.
 - **N panel**: edit selected tie name, color, spacing, style (`MACHOCAT`, `MUSIC NOTE`, etc.), and appearance.
 - **Match sizes**: `Alt+S` to unify selected tie sizes.
 - **Move selected**: `G` to move selected nodes and ties together.

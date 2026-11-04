@@ -3408,16 +3408,18 @@ def ui_selected_actions(layout,context):
     col.enabled = bool(tree and tree.is_editable and chosen)
     rename = col.row()
     rename.enabled = bool(tree and tree.is_editable and len(chosen)==1)
-    rename_op = rename.operator('tie.rz_name',text=i18n_tr('Name (N)'),translate=False)
+    rename_op = rename.operator('tie.rz_name',text=i18n_tr('(N) Name'),translate=False)
     rename_op.ui_hide_shortcut = False
-    col.operator('tie.rz_color_popup',text=i18n_tr('Color (C)'),translate=False)
+    col.operator('tie.rz_color_popup',text=i18n_tr('(C) Color'),translate=False)
+    move_row = col.row()
+    move_row.operator('tie.rz_move_selection',text=i18n_tr('(G) Move'),translate=False)
     remove_row = col.row()
     remove_row.alert = True
-    # The accelerator is the first unused letter in the menu, so "Remove Tie (X)"
-    # bound its menu key to T. Put X first so the menu honours the documented X
-    # shortcut while the label stays readable.
+    # The accelerator is the first letter of the label, so the shortcut key leads
+    # every entry: (N) / (C) / (G) / (X). This keeps the menu key equal to the
+    # documented shortcut instead of being taken by an earlier word.
     remove_text = i18n_tr('Remove Tie' if len(chosen)==1 else 'Remove Ties')
-    remove_row.operator('tie.rz_delete',text='X  ' + remove_text,translate=False)
+    remove_row.operator('tie.rz_delete',text='(X) ' + remove_text,translate=False)
 
 
 class TRZ_PT_color_popover(bpy.types.Panel):
@@ -3453,9 +3455,9 @@ class TRZ_MT_context(bpy.types.Menu):
         layout.separator()
         col = layout.column()
         col.enabled = bool(tree and tree.is_editable and chosen)
-        rotate_op = col.operator('tie.rz_rotate',text=i18n_tr('Rotate (R)'),translate=False)
+        rotate_op = col.operator('tie.rz_rotate',text=i18n_tr('(R) Rotate'),translate=False)
         rotate_op.ui_hide_shortcut = False
-        scale_op = col.operator('tie.rz_scale',text=i18n_tr('Spacing (S)'),translate=False)
+        scale_op = col.operator('tie.rz_scale',text=i18n_tr('(S) Spacing'),translate=False)
         scale_op.ui_hide_shortcut = False
         ui_selected_actions(layout,context)
 

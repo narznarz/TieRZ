@@ -109,8 +109,9 @@
   "Remove missing connections from ties; does not delete disconnected nodes": "仅移除扎带中缺失的连接引用；不会删除断开连接的节点",
   "No TiesRZ data was found in this file": "此文件中未找到 TiesRZ 数据",
   "Cleanup stopped: make linked node trees editable first": "清理已停止：请先将链接的节点树设为可编辑",
-  "Name (N)": "名称 (N)",
-  "Color (C)": "颜色 (C)",
-  "Rotate (R)": "旋转 (R)",
-  "Spacing (S)": "间距 (S)"
+  "(N) Name": "(N) 名称",
+  "(C) Color": "(C) 颜色",
+  "(R) Rotate": "(R) 旋转",
+  "(S) Spacing": "(S) 间距",
+  "(G) Move": "(G) 移动"
 }
