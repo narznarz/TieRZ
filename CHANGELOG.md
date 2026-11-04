@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.18.42 (2026-11-04)
+
+### Added
+- Simplified Chinese (`zh_CN.json`) and Japanese (`ja_JP.json`) translations covering all
+  interface strings, including placeholders and cleanup dialog text.
+- Language names for the new locales in the language selector (简体中文, 日本語).
+
 ## 0.18.41 (2026-11-04)
 
 ### Fixed

@@ -22,7 +22,7 @@ from bpy.app.handlers import persistent
 
 i18n_DOMAIN = "TieRZ"
 i18n_I18N_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), "i18n")
-i18n_LANGUAGE_NAMES = {"en_US": "English", "ko_KR": "한국어"}
+i18n_LANGUAGE_NAMES = {"en_US": "English", "ko_KR": "한국어", "zh_CN": "简体中文", "ja_JP": "日本語"}
 i18n_LOCALE_CODES = {
     "en_US", "en", "ko_KR", "ko", "ja_JP", "ja", "zh_CN", "zh",
     "zh_TW", "es_ES", "es", "fr_FR", "fr", "de_DE", "de", "ru_RU",
