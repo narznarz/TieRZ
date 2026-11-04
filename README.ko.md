@@ -98,7 +98,11 @@ TieRZ는 순수 오픈소스 프로젝트이며, **앞으로도 어떠한 유료
 ---
 
 ## 저작권 (Copyright)
-MACHOCAT 마스코트 캐릭터 저작권 (c) NARZ & 박냥냥.
+
+<p align="left">
+  <img src="assets/7_macho_shy.png" width="96" alt="MACHOCAT Character" style="vertical-align: middle; margin-right: 12px;"/>
+  <span>MACHOCAT 마스코트 캐릭터 저작권 &copy; <b>NARZ & 박냥냥</b>.</span>
+</p>
 
 ---
 
