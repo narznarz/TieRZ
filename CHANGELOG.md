@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.18.44 (2026-11-05)
+
+### Fixed
+- **"Clean Add-on Data" crashed with `ReferenceError: StructRNA of type Image has been
+  removed`**: the MachoCAT GPU texture cache could hold an Image datablock that a file
+  reload, add-on update, or earlier cleanup had already removed. Reading the cache then
+  raised a ReferenceError and aborted both the scan and the cleanup run.
+  - Dead cache entries are now detected and dropped before their pointer is read
+    (`rendering__live_macho_image_pointers`).
+  - Image iteration in the scan and cleanup paths guards `image.get`, `as_pointer`,
+    `filepath`, `users`, `pack`, and property removal against removed datablocks.
+
 ## 0.18.43 (2026-11-04)
 
 ### Changed

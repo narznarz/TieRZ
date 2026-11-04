@@ -1249,6 +1249,26 @@ def rendering_polygon(points,color,shades=None):
     batch_for_shader(shader,'TRIS',attributes,indices=indices).draw(shader)
 
 
+def rendering__live_macho_image_pointers():
+    """Pointer set of cached MachoCAT images that still exist.
+
+    The GPU texture cache keeps Image datablocks alive by reference, but a file
+    reload, add-on update, or a prior cleanup can remove one underneath us. A
+    dead reference raises ReferenceError from as_pointer(), so drop those
+    entries here instead of letting the scan/cleanup operators crash.
+    """
+    pointers = set()
+    dead = []
+    for icon_name,(image,_texture) in rendering_macho_images.items():
+        try:
+            pointers.add(image.as_pointer())
+        except (ReferenceError,RuntimeError):
+            dead.append(icon_name)
+    for icon_name in dead:
+        rendering_macho_images.pop(icon_name,None)
+    return pointers
+
+
 def rendering__macho_texture(icon_name):
     cached = rendering_macho_images.get(icon_name)
     if cached:
@@ -2742,20 +2762,30 @@ def interaction_addon_cleanup_scan():
                 if any(link.from_node in owner_helpers or link.to_node in owner_helpers
                        for link in tree.links):
                     broken_count += 1
-    cached_images = {image.as_pointer() for image,_texture in rendering_macho_images.values()}
+    cached_images = rendering__live_macho_image_pointers()
     icons = set(rendering_MACHO_ICONS) | set(rendering_MUSIC_ICONS) | {'macho_smile.png','7_macho_shy.png'}
     image_candidates = []
     for image in bpy.data.images:
-        marked = bool(image.get('_TRZ_asset',False))
-        cached = image.as_pointer() in cached_images
-        filepath = bpy.path.abspath(image.filepath)
+        try:
+            marked = bool(image.get('_TRZ_asset',False))
+            pointer = image.as_pointer()
+            cached = pointer in cached_images
+            filepath = bpy.path.abspath(image.filepath)
+        except (ReferenceError,RuntimeError):
+            continue
         filename = os.path.basename(filepath)
         addon_asset = (filename in icons and
                        os.path.basename(os.path.dirname(filepath)).lower() == 'assets' and
                        'TieRZ' in filepath.lower())
         if marked or cached or addon_asset:
             image_candidates.append(image)
-    removable_images = sum(image.users == 0 for image in image_candidates)
+    removable_images = 0
+    for image in image_candidates:
+        try:
+            if image.users == 0:
+                removable_images += 1
+        except (ReferenceError,RuntimeError):
+            continue
     preserved_images = len(image_candidates)-removable_images
     return dict(trees=affected,ties=tie_count,helpers=helper_count,
                 complete=complete_count,broken=broken_count,readonly=readonly_count,
@@ -2841,28 +2871,39 @@ class TRZ_OT_cleanup_addon_data(bpy.types.Operator):
                         link.from_node == node or link.to_node == node for link in tree.links):
                     tree.nodes.remove(node)
 
-        cached_images = {image.as_pointer() for image,_texture in rendering_macho_images.values()}
+        cached_images = rendering__live_macho_image_pointers()
         rendering_macho_images.clear()
         rendering_route_repair_pending.clear()
         icons = set(rendering_MACHO_ICONS) | set(rendering_MUSIC_ICONS) | {'macho_smile.png','7_macho_shy.png'}
         for image in list(bpy.data.images):
-            marked = bool(image.get('_TRZ_asset',False))
-            filepath = bpy.path.abspath(image.filepath)
+            try:
+                marked = bool(image.get('_TRZ_asset',False))
+                pointer = image.as_pointer()
+                filepath = bpy.path.abspath(image.filepath)
+                users = image.users
+            except (ReferenceError,RuntimeError):
+                continue
             filename = os.path.basename(filepath)
             addon_asset = (filename in icons and
                            os.path.basename(os.path.dirname(filepath)).lower() == 'assets' and
                            'TieRZ' in filepath.lower())
-            if not marked and image.as_pointer() not in cached_images and not addon_asset:
+            if not marked and pointer not in cached_images and not addon_asset:
                 continue
-            if image.users == 0:
-                bpy.data.images.remove(image)
+            if users == 0:
+                try:
+                    bpy.data.images.remove(image)
+                except (ReferenceError,RuntimeError):
+                    pass
             else:
                 try:
                     image.pack()
-                except (RuntimeError,TypeError):
+                except (RuntimeError,TypeError,ReferenceError):
                     pass
                 if marked:
-                    del image['_TRZ_asset']
+                    try:
+                        del image['_TRZ_asset']
+                    except (ReferenceError,RuntimeError,TypeError):
+                        pass
         selection_clear()
         clipboard_payload = None
         interaction_redraw(context)
