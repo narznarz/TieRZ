@@ -113,6 +113,4 @@ SPDX:GPL-3.0-or-later (GNU General Public License v3.0)
 
 ---
 
-## Version
-
 [![n 0.18.49](https://img.shields.io/badge/n%200.18.49-000000?style=flat-square)](https://github.com/narznarz/TieRZ/releases/tag/v0.18.49)
