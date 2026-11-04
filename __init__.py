@@ -3422,7 +3422,17 @@ def ui_state(context):
     return tree, [t for t in data_read(tree) if t['id'] in chosen] if tree else []
 
 
-def ui_selected_actions(layout,context):
+def ui_move_action(layout,context):
+    """Draw the (G) Move entry; used by the right-click menu (drawn first) and the
+    N-panel selected-actions block."""
+    tree,chosen = ui_state(context)
+    col = layout.column(align=True)
+    col.enabled = bool(tree and tree.is_editable and chosen)
+    col.operator('tie.rz_move_from_menu',text=i18n_tr('(G) Move'),translate=False,
+                 icon='MOUSE_MOVE')
+
+
+def ui_selected_actions(layout,context,include_move=True):
     tree,chosen = ui_state(context)
     if tree:
         layout.context_pointer_set('node_tree',tree)
@@ -3430,17 +3440,20 @@ def ui_selected_actions(layout,context):
     col.enabled = bool(tree and tree.is_editable and chosen)
     # Shortcut key leads every label so the menu accelerator equals the key:
     # (G) / (N) / (C) / (X).
-    move_row = col.row()
-    move_row.operator('tie.rz_move_from_menu',text=i18n_tr('(G) Move'),translate=False)
+    if include_move:
+        ui_move_action(col,context)
     rename = col.row()
     rename.enabled = bool(tree and tree.is_editable and len(chosen)==1)
-    rename_op = rename.operator('tie.rz_name',text=i18n_tr('(N) Name'),translate=False)
+    rename_op = rename.operator('tie.rz_name',text=i18n_tr('(N) Name'),translate=False,
+                                icon='SORTALPHA')
     rename_op.ui_hide_shortcut = False
-    col.operator('tie.rz_color_popup',text=i18n_tr('(C) Color'),translate=False)
+    col.operator('tie.rz_color_popup',text=i18n_tr('(C) Color'),translate=False,
+                 icon='COLOR')
     remove_row = col.row()
     remove_row.alert = True
     remove_text = i18n_tr('Remove Tie' if len(chosen)==1 else 'Remove Ties')
-    remove_row.operator('tie.rz_delete',text='(X) ' + remove_text,translate=False)
+    remove_row.operator('tie.rz_delete',text='(X) ' + remove_text,translate=False,
+                        icon='TRASH')
 
 
 class TRZ_PT_color_popover(bpy.types.Panel):
@@ -3476,11 +3489,14 @@ class TRZ_MT_context(bpy.types.Menu):
         layout.separator()
         col = layout.column()
         col.enabled = bool(tree and tree.is_editable and chosen)
-        rotate_op = col.operator('tie.rz_rotate',text=i18n_tr('(R) Rotate'),translate=False)
+        ui_move_action(col,context)
+        rotate_op = col.operator('tie.rz_rotate',text=i18n_tr('(R) Rotate'),translate=False,
+                                 icon='GESTURE_ROTATE')
         rotate_op.ui_hide_shortcut = False
-        scale_op = col.operator('tie.rz_scale',text=i18n_tr('(S) Spacing'),translate=False)
+        scale_op = col.operator('tie.rz_scale',text=i18n_tr('(S) Spacing'),translate=False,
+                                icon='MOD_LENGTH')
         scale_op.ui_hide_shortcut = False
-        ui_selected_actions(layout,context)
+        ui_selected_actions(layout,context,include_move=False)
 
 
 ui_COLOR_MODE_ITEMS = (

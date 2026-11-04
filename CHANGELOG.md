@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.18.48 (2026-11-05)
+
+### Changed
+- **Right-click menu order**: `(G) Move` is now the first entry, followed by
+  `(R) Rotate`, `(S) Spacing`, `(N) Name`, `(C) Color`, `(X) Remove Tie`.
+
+### Added
+- **Built-in icons for every right-click / panel action**: `(G) Move` (MOUSE_MOVE),
+  `(R) Rotate` (GESTURE_ROTATE), `(S) Spacing` (MOD_LENGTH), `(N) Name` (SORTALPHA),
+  `(C) Color` (COLOR), `(X) Remove Tie` (TRASH).
+
 ## 0.18.47 (2026-11-05)
 
 ### Changed
