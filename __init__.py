@@ -3044,16 +3044,28 @@ def interaction_add_keymaps():
     kc = bpy.context.window_manager.keyconfigs.addon
     if not kc:
         return
-    km = kc.keymaps.new(name='Node Editor',space_type='NODE_EDITOR')
+    # Group nodes can be edited inside the same NODE_EDITOR area but may match
+    # a different keymap ('Node Generic') than the plain 'Node Editor' one.
+    # Register the shortcuts in both so the gesture works inside node groups too.
+    maps = []
+    for name in ('Node Editor','Node Generic'):
+        existing = kc.keymaps.get(name)
+        maps.append(existing or kc.keymaps.new(name=name,space_type='NODE_EDITOR'))
     # key_modifier preserves the bare Blender key command. Menu command also works without key.
     key = preferences_prefs(bpy.context).gesture_key
-    entries = [('tie.rz_gesture','LEFTMOUSE','PRESS',dict(key_modifier=key)),
-               ('tie.rz_pick','LEFTMOUSE','PRESS',dict(any=True)),
-               ('tie.rz_pick','RIGHTMOUSE','PRESS',dict(any=True))]
-    for op,kind,value,kw in entries:
-        item = km.keymap_items.new(op,kind,value,**kw)
-        interaction_keymaps.append((km,item))
-    interaction_keymaps.append((km,km.keymap_items.new('tie.rz_hover','MOUSEMOVE','ANY',any=True)))
+
+    def bind(operator,kind,value,**kw):
+        created = []
+        for km in maps:
+            item = km.keymap_items.new(operator,kind,value,**kw)
+            interaction_keymaps.append((km,item))
+            created.append(item)
+        return created
+
+    bind('tie.rz_gesture','LEFTMOUSE','PRESS',key_modifier=key)
+    bind('tie.rz_pick','LEFTMOUSE','PRESS',any=True)
+    bind('tie.rz_pick','RIGHTMOUSE','PRESS',any=True)
+    bind('tie.rz_hover','MOUSEMOVE','ANY',any=True)
     # Circle Select clears tie selection at the beginning of an empty-canvas
     # stroke and transfers helper selection once, when that stroke ends.
     for name in ('Node Tool: Select Circle','Node Tool: Select Circle (fallback)'):
@@ -3066,23 +3078,21 @@ def interaction_add_keymaps():
                 interaction_keymaps.append((circle_km,item))
         except (TypeError,RuntimeError):
             continue
-    interaction_keymaps.append((km,km.keymap_items.new('tie.rz_rotate','R','PRESS')))
-    interaction_keymaps.append((km,km.keymap_items.new('tie.rz_move_selection','G','PRESS')))
-    interaction_keymaps.append((km,km.keymap_items.new('tie.rz_scale','S','PRESS')))
-    interaction_keymaps.append((km,km.keymap_items.new('tie.rz_match_scale','S','PRESS',alt=True)))
-    interaction_keymaps.append((km,km.keymap_items.new('tie.rz_name','N','PRESS')))
-    interaction_keymaps.append((km,km.keymap_items.new('tie.rz_color','C','PRESS')))
-    item = km.keymap_items.new('tie.rz_edit','X','PRESS')
-    item.properties.action = 'DELETE'
-    item.properties.delete_nodes = False
-    interaction_keymaps.append((km,item))
+    bind('tie.rz_rotate','R','PRESS')
+    bind('tie.rz_move_selection','G','PRESS')
+    bind('tie.rz_scale','S','PRESS')
+    bind('tie.rz_match_scale','S','PRESS',alt=True)
+    bind('tie.rz_name','N','PRESS')
+    bind('tie.rz_color','C','PRESS')
+    for item in bind('tie.rz_edit','X','PRESS'):
+        item.properties.action = 'DELETE'
+        item.properties.delete_nodes = False
     # Delete mirrors X: remove the selected ties only and leave their reroute
     # helpers in place. Backspace is deliberately not bound so it keeps its
     # native "reset to default" meaning in the node editor.
-    item = km.keymap_items.new('tie.rz_edit','DEL','PRESS')
-    item.properties.action = 'DELETE'
-    item.properties.delete_nodes = False
-    interaction_keymaps.append((km,item))
+    for item in bind('tie.rz_edit','DEL','PRESS'):
+        item.properties.action = 'DELETE'
+        item.properties.delete_nodes = False
 
 
 def interaction_remove_keymaps():
