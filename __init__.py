@@ -21,6 +21,16 @@ from bpy.app.handlers import persistent
 
 
 i18n_DOMAIN = "TieRZ"
+i18n_DEBUG_LOG = os.path.join(os.path.expanduser("~"), "tierz_debug.log")
+
+
+def i18n_debug(message):
+    """Temporary diagnostic logger for group-node gesture debugging."""
+    try:
+        with open(i18n_DEBUG_LOG, "a", encoding="utf-8") as handle:
+            handle.write(str(message) + "\n")
+    except Exception:
+        pass
 i18n_I18N_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), "i18n")
 i18n_LANGUAGE_NAMES = {"en_US": "English", "ko_KR": "한국어", "zh_CN": "简体中文", "ja_JP": "日本語"}
 i18n_LOCALE_CODES = {
@@ -2104,7 +2114,21 @@ class TRZ_OT_gesture(interaction_NodeOperator,bpy.types.Operator):
     bl_description = 'Drag a line across at least two wires; crossing a tie cuts it'
     bl_options = {'REGISTER','UNDO','BLOCKING'}
 
+    @classmethod
+    def poll(cls,context):
+        tree = rendering_tree_of(context)
+        result = tree is not None and tree.is_editable
+        i18n_debug("GESTURE poll: tree=%s editable=%s result=%s spaceType=%s" % (
+            getattr(tree,'name','NONE'), getattr(tree,'is_editable','?'),
+            result, getattr(context.space_data,'type','?')))
+        return result
+
     def invoke(self,context,event):
+        space = context.space_data
+        i18n_debug("GESTURE invoke: event=%s spaceType=%s tree=%s editTree=%s" % (
+            getattr(event,'type','?'), getattr(space,'type','?'),
+            getattr(rendering_tree_of(context),'name','NONE'),
+            getattr(getattr(space,'edit_tree',None),'name','NONE')))
         self.tree = rendering_tree_of(context)
         self.node_ids = [(n,n.get(data_NODE_ID)) for n in self.tree.nodes]
         # Assign IDs before collecting keys, within this operator's undo step.
@@ -2134,8 +2158,10 @@ class TRZ_OT_gesture(interaction_NodeOperator,bpy.types.Operator):
 
     def modal(self,context,event):
         if event.type in {'ESC','RIGHTMOUSE'} and event.value == 'PRESS':
+            i18n_debug("GESTURE modal: CANCEL")
             return self.finish(context,True)
         if event.type == 'LEFTMOUSE' and event.value == 'PRESS':
+            i18n_debug("GESTURE modal: LEFTMOUSE PRESS -> start")
             self.start = interaction_point(context,event)
             self.screen_path = [(event.mouse_region_x,event.mouse_region_y)]
         if self.start is not None and event.type == 'MOUSEMOVE':
@@ -2144,6 +2170,7 @@ class TRZ_OT_gesture(interaction_NodeOperator,bpy.types.Operator):
             if not self.screen_path or math.dist(screen,self.screen_path[-1]) >= 1.0:
                 self.screen_path.append(screen)
             cuts = interaction_tie_cuts_at(context,self.ties,self.start,p)
+            i18n_debug("GESTURE modal: MOUSEMOVE path=%d cuts=%d" % (len(self.screen_path),len(cuts)))
             selection_preview[self.area_key] = (self.start,p,cuts)
             interaction_redraw(context)
         if self.start is not None and event.type == 'LEFTMOUSE' and event.value == 'RELEASE':
@@ -2152,6 +2179,7 @@ class TRZ_OT_gesture(interaction_NodeOperator,bpy.types.Operator):
             if not self.screen_path or screen != self.screen_path[-1]:
                 self.screen_path.append(screen)
             cuts = interaction_tie_cuts_at(context,self.ties,self.start,p)
+            i18n_debug("GESTURE modal: RELEASE path=%d cuts=%d" % (len(self.screen_path),len(cuts)))
             if cuts:
                 self.ties = [t for t in self.ties if t['id'] not in cuts]
                 selection_of(self.tree).difference_update(cuts)
