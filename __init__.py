@@ -171,6 +171,20 @@ data_KEY = '_TieRZ_v1'
 data_NODE_ID = '_TieRZ_uuid'
 
 
+def data_tree_writable(tree):
+    """Whether tie data can be written to this tree.
+
+    Group-node trees report is_editable=False in Blender even though their
+    nodes and links are editable. Only library-linked trees are truly read-only.
+    """
+    if tree is None:
+        return False
+    try:
+        return tree.library is None
+    except (AttributeError,ReferenceError):
+        return bool(tree.is_editable)
+
+
 def data_color_srgb_to_linear(color):
     """Tie colors are stored/rendered as display sRGB; COLOR properties are scene-linear."""
     def channel(value):
@@ -306,12 +320,12 @@ class TRZ_OT_copy(bpy.types.Operator):
     @classmethod
     def poll(cls,context):
         tree = rendering_tree_of(context)
-        return bool(tree and tree.is_editable and any(n.select and not routing_managed(n) for n in tree.nodes))
+        return bool(tree and data_tree_writable(tree) and any(n.select and not routing_managed(n) for n in tree.nodes))
 
     def execute(self,context):
         global clipboard_payload
         tree = rendering_tree_of(context)
-        if not tree.is_editable:
+        if not data_tree_writable(tree):
             return {'CANCELLED'}
         data_repair_duplicate_ids(tree)
         chosen = {data_uid(n):tuple(n.location_absolute) for n in tree.nodes if n.select and not routing_managed(n)}
@@ -343,7 +357,7 @@ class TRZ_OT_paste(bpy.types.Operator):
     @classmethod
     def poll(cls,context):
         tree = rendering_tree_of(context)
-        return bool(tree and tree.is_editable and clipboard_payload)
+        return bool(tree and data_tree_writable(tree) and clipboard_payload)
 
     def execute(self,context):
         tree = rendering_tree_of(context)
@@ -1124,7 +1138,7 @@ def rendering__sync_selected_helpers(tree,tree_pointer):
 
 def rendering_sync_selected_helpers_now(tree,redraw_areas=True):
     try:
-        if not tree or not tree.is_editable:
+        if not tree or not data_tree_writable(tree):
             return
         helpers = [n for n in tree.nodes if n.select and routing_managed(n)]
         tie_ids = {n.get(routing_TIE) for n in helpers if n.get(routing_TIE)}
@@ -1184,7 +1198,7 @@ def rendering_routes_need_repair(tree,ties):
 
 def rendering_schedule_route_repair(tree):
     try:
-        if not tree or not tree.is_editable:
+        if not tree or not data_tree_writable(tree):
             return
         pointer = tree.as_pointer()
         if pointer in rendering_route_repair_pending:
@@ -1197,7 +1211,7 @@ def rendering_schedule_route_repair(tree):
         def repair():
             rendering_route_repair_pending.discard(pointer)
             try:
-                if tree.as_pointer() != pointer or not tree.is_editable:
+                if tree.as_pointer() != pointer or not data_tree_writable(tree):
                     return None
                 current = data_read(tree)
                 if rendering_routes_need_repair(tree,current):
@@ -1645,7 +1659,7 @@ def preferences_update_selected_visual(self,context,field):
     if self.panel_syncing:
         return
     tree = rendering_tree_of(context)
-    if not tree or not tree.is_editable:
+    if not tree or not data_tree_writable(tree):
         return
     chosen = selection_of(tree)
     if not chosen:
@@ -1681,7 +1695,7 @@ def preferences_update_selected_spacing(self,context):
     if self.panel_syncing:
         return
     tree = rendering_tree_of(context)
-    if not tree or not tree.is_editable:
+    if not tree or not data_tree_writable(tree):
         return
     chosen = selection_of(tree)
     if not chosen:
@@ -1734,7 +1748,7 @@ def preferences_update_routes(self,context):
     trees += [m.node_tree for m in bpy.data.materials if m.node_tree]
     trees += [w.node_tree for w in bpy.data.worlds if w.node_tree]
     for tree in trees:
-        if tree.is_editable and data_KEY in tree:
+        if data_tree_writable(tree) and data_KEY in tree:
             routing_sync(tree,data_read(tree),self.spacing,self.width)
     for window in context.window_manager.windows:
         for area in window.screen.areas:
@@ -2090,7 +2104,15 @@ class interaction_NodeOperator:
     @classmethod
     def poll(cls,context):
         tree = rendering_tree_of(context)
-        return tree is not None and tree.is_editable
+        if tree is None:
+            return False
+        # Group-node trees can report is_editable=False in some Blender builds
+        # even though their nodes/links are editable. Only truly linked
+        # (read-only) datablocks should block the operator.
+        try:
+            return tree.library is None
+        except (AttributeError,ReferenceError):
+            return tree.is_editable
 
 
 class TRZ_OT_hover(interaction_NodeOperator,bpy.types.Operator):
@@ -2117,7 +2139,10 @@ class TRZ_OT_gesture(interaction_NodeOperator,bpy.types.Operator):
     @classmethod
     def poll(cls,context):
         tree = rendering_tree_of(context)
-        result = tree is not None and tree.is_editable
+        try:
+            result = tree is not None and tree.library is None
+        except (AttributeError,ReferenceError):
+            result = tree is not None and tree.is_editable
         i18n_debug("GESTURE poll: tree=%s editable=%s result=%s spaceType=%s" % (
             getattr(tree,'name','NONE'), getattr(tree,'is_editable','?'),
             result, getattr(context.space_data,'type','?')))
@@ -2497,7 +2522,7 @@ class TRZ_OT_match_scale(interaction_NodeOperator,bpy.types.Operator):
     @classmethod
     def poll(cls,context):
         tree = rendering_tree_of(context)
-        if not tree or not tree.is_editable:
+        if not tree or not data_tree_writable(tree):
             return False
         chosen = selection_of(tree)
         return sum(tie['id'] in chosen for tie in data_read(tree)) >= 2
@@ -2591,12 +2616,12 @@ class TRZ_OT_delete(interaction_NodeOperator,bpy.types.Operator):
     @classmethod
     def poll(cls,context):
         tree = rendering_tree_of(context)
-        return bool(tree and tree.is_editable and
+        return bool(tree and data_tree_writable(tree) and
                     any(t['id'] in selection_of(tree) for t in data_read(tree)))
 
     def execute(self,context):
         tree = rendering_tree_of(context)
-        if not tree or not tree.is_editable:
+        if not tree or not data_tree_writable(tree):
             return {'CANCELLED'}
         selected = selection_of(tree)
         ties = [t for t in data_read(tree) if t['id'] not in selected]
@@ -2619,7 +2644,7 @@ class TRZ_OT_color(interaction_NodeOperator,bpy.types.Operator):
     @classmethod
     def poll(cls,context):
         tree = rendering_tree_of(context)
-        return bool(tree and tree.is_editable and
+        return bool(tree and data_tree_writable(tree) and
                     any(t['id'] in selection_of(tree) for t in data_read(tree)))
 
     def invoke(self,context,event):
@@ -2635,7 +2660,7 @@ class TRZ_OT_color(interaction_NodeOperator,bpy.types.Operator):
     def execute(self,context):
         tree = bpy.data.node_groups.get(self.tree_name) if self.tree_name else None
         tree = tree or rendering_tree_of(context)
-        if not tree or not tree.is_editable:
+        if not tree or not data_tree_writable(tree):
             return {'CANCELLED'}
         ties = data_read(tree)
         for tie in ties:
@@ -2655,7 +2680,7 @@ class TRZ_OT_color_popup(interaction_NodeOperator,bpy.types.Operator):
     @classmethod
     def poll(cls,context):
         tree = rendering_tree_of(context)
-        return bool(tree and tree.is_editable and
+        return bool(tree and data_tree_writable(tree) and
                     any(t['id'] in selection_of(tree) for t in data_read(tree)))
 
     def invoke(self,context,event):
@@ -2674,7 +2699,7 @@ class TRZ_OT_name(interaction_NodeOperator,bpy.types.Operator):
     @classmethod
     def poll(cls,context):
         tree = rendering_tree_of(context)
-        return bool(tree and tree.is_editable and
+        return bool(tree and data_tree_writable(tree) and
                     sum(t['id'] in selection_of(tree) for t in data_read(tree))==1)
 
     def invoke(self,context,event):
@@ -3004,7 +3029,7 @@ class TRZ_OT_move_nodes(interaction_NodeOperator,bpy.types.Operator):
     @classmethod
     def poll(cls,context):
         tree = rendering_tree_of(context)
-        return bool(tree and tree.is_editable and (
+        return bool(tree and data_tree_writable(tree) and (
             any(n.select and not routing_managed(n) for n in tree.nodes) or
             any(t['id'] in selection_of(tree) for t in data_read(tree))))
 
@@ -3171,7 +3196,7 @@ class TRZ_OT_move_menu(bpy.types.Operator):
     @classmethod
     def poll(cls,context):
         tree = rendering_tree_of(context)
-        return bool(tree and tree.is_editable and (
+        return bool(tree and data_tree_writable(tree) and (
             any(n.select and not routing_managed(n) for n in tree.nodes) or
             any(t['id'] in selection_of(tree) for t in data_read(tree))))
 
@@ -3465,7 +3490,7 @@ def ui_move_action(layout,context):
     N-panel selected-actions block."""
     tree,chosen = ui_state(context)
     col = layout.column(align=True)
-    col.enabled = bool(tree and tree.is_editable and chosen)
+    col.enabled = bool(tree and data_tree_writable(tree) and chosen)
     col.operator('tie.rz_move_from_menu',text='  ' + i18n_tr('(G) Move'),translate=False,
                  icon='MOUSE_MOVE')
 
@@ -3475,13 +3500,13 @@ def ui_selected_actions(layout,context,include_move=True):
     if tree:
         layout.context_pointer_set('node_tree',tree)
     col = layout.column(align=True)
-    col.enabled = bool(tree and tree.is_editable and chosen)
+    col.enabled = bool(tree and data_tree_writable(tree) and chosen)
     # Shortcut key leads every label so the menu accelerator equals the key:
     # (G) / (N) / (C) / (X).
     if include_move:
         ui_move_action(col,context)
     rename = col.row()
-    rename.enabled = bool(tree and tree.is_editable and len(chosen)==1)
+    rename.enabled = bool(tree and data_tree_writable(tree) and len(chosen)==1)
     rename_op = rename.operator('tie.rz_name',text='  ' + i18n_tr('(N) Name'),translate=False,
                                 icon='SORTALPHA')
     rename_op.ui_hide_shortcut = False
@@ -3506,7 +3531,7 @@ class TRZ_PT_color_popover(bpy.types.Panel):
         tree,chosen = ui_state(context)
         ui_sync_panel_state(context,tree,chosen)
         col = layout.column()
-        col.enabled = bool(tree and tree.is_editable and chosen)
+        col.enabled = bool(tree and data_tree_writable(tree) and chosen)
         col.template_color_picker(options,'selected_tie_color',value_slider=True,cubic=False)
         col.prop(options,'selected_tie_color',text='')
 
@@ -3526,7 +3551,7 @@ class TRZ_MT_context(bpy.types.Menu):
         hints.label(text=i18n_tr('Match Sizes'),icon='MOD_LENGTH')
         layout.separator()
         col = layout.column()
-        col.enabled = bool(tree and tree.is_editable and chosen)
+        col.enabled = bool(tree and data_tree_writable(tree) and chosen)
         ui_move_action(col,context)
         rotate_op = col.operator('tie.rz_rotate',text='  ' + i18n_tr('(R) Rotate'),translate=False,
                                  icon='GESTURE_ROTATE')
@@ -3621,17 +3646,17 @@ class TRZ_PT_panel(bpy.types.Panel):
                     icon='MOUSE_LMB',translate=False)
         if not tree:
             quick.label(text=i18n_tr('Open a node tree to start.'),translate=False)
-        elif not tree.is_editable:
+        elif not data_tree_writable(tree):
             quick.label(text=i18n_tr('This node tree is read-only.'),icon='LOCKED',translate=False)
 
         box = layout.box()
         box.label(text=f"{i18n_tr('Selected Ties')} · {len(chosen)}",icon='LINKED',translate=False)
         if chosen:
             name_row = box.row()
-            name_row.enabled = bool(tree and tree.is_editable and len(chosen)==1)
+            name_row.enabled = bool(tree and data_tree_writable(tree) and len(chosen)==1)
             name_row.prop(options,'selected_tie_name',text=i18n_tr('Name'),translate=False)
             color_row = box.row(align=True)
-            color_row.enabled = bool(tree and tree.is_editable)
+            color_row.enabled = bool(tree and data_tree_writable(tree))
             color_row.prop(options,'selected_tie_color',text=i18n_tr('Color'),translate=False)
             remove_row = box.row()
             remove_row.alert = True
@@ -3671,7 +3696,7 @@ class TRZ_PT_panel(bpy.types.Panel):
         maintenance = layout.box()
         maintenance.label(text=i18n_tr('Maintenance'),icon='TOOL_SETTINGS',translate=False)
         prune = maintenance.row()
-        prune.enabled = bool(tree and tree.is_editable and data_read(tree))
+        prune.enabled = bool(tree and data_tree_writable(tree) and data_read(tree))
         prune.operator('tie.rz_edit',text=i18n_tr('Remove Missing Wire References'),
                        icon='BRUSH_DATA',translate=False).action = 'PRUNE'
 
@@ -3719,7 +3744,7 @@ def __init___migrate_routes():
     trees += [m.node_tree for m in bpy.data.materials if m.node_tree]
     trees += [w.node_tree for w in bpy.data.worlds if w.node_tree]
     for tree in trees:
-        if tree.is_editable and data_KEY in tree:
+        if data_tree_writable(tree) and data_KEY in tree:
             ties = data_read(tree)
             needed = {(t['id'],k) for t in ties for k in t['members']}
             existing = {(n.get(routing_TIE),n.get(routing_OWNER)) for n in tree.nodes if routing_managed(n)}
