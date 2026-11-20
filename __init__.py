@@ -316,6 +316,7 @@ class TRZ_OT_copy(bpy.types.Operator):
         global clipboard_payload
         tree = rendering_tree_of(context)
         if not data_tree_writable(tree):
+            self.report({'WARNING'}, 'TieRZ: linked/read-only node group - make it local to add ties.')
             return {'CANCELLED'}
         data_repair_duplicate_ids(tree)
         chosen = {data_uid(n):tuple(n.location_absolute) for n in tree.nodes if n.select and not routing_managed(n)}
@@ -2094,15 +2095,17 @@ class interaction_NodeOperator:
     @classmethod
     def poll(cls,context):
         tree = rendering_tree_of(context)
-        if tree is None:
-            return False
-        # Group-node trees can report is_editable=False in some Blender builds
-        # even though their nodes/links are editable. Only truly linked
-        # (read-only) datablocks should block the operator.
-        try:
-            return tree.library is None
-        except (AttributeError,ReferenceError):
-            return tree.is_editable
+        return tree is not None
+
+    def require_writable(self,context):
+        """Report a clear message when the active tree is a linked library."""
+        tree = rendering_tree_of(context)
+        if data_tree_writable(tree):
+            return True
+        self.report({'WARNING'},
+                    'TieRZ: 이 노드 그룹은 외부 라이브러리에서 링크되어 읽기 전용입니다. '
+                    '로컬로 만들어야 타이를 추가할 수 있습니다 (Object > Library > Make Local).')
+        return False
 
 
 class TRZ_OT_hover(interaction_NodeOperator,bpy.types.Operator):
@@ -2129,17 +2132,13 @@ class TRZ_OT_gesture(interaction_NodeOperator,bpy.types.Operator):
     @classmethod
     def poll(cls,context):
         tree = rendering_tree_of(context)
-        try:
-            result = tree is not None and tree.library is None
-        except (AttributeError,ReferenceError):
-            result = tree is not None and tree.is_editable
-        lib = None
-        try:
-            lib = tree.library.filepath if (tree is not None and tree.library) else None
-        except Exception:
-            lib = '?'
+        return tree is not None
+
     def invoke(self,context,event):
+        if not self.require_writable(context):
+            return {'CANCELLED'}
         space = context.space_data
+        self.tree = rendering_tree_of(context)
         self.node_ids = [(n,n.get(data_NODE_ID)) for n in self.tree.nodes]
         # Assign IDs before collecting keys, within this operator's undo step.
         data_repair_duplicate_ids(self.tree)
@@ -2603,6 +2602,7 @@ class TRZ_OT_delete(interaction_NodeOperator,bpy.types.Operator):
     def execute(self,context):
         tree = rendering_tree_of(context)
         if not tree or not data_tree_writable(tree):
+            self.report({'WARNING'}, 'TieRZ: linked/read-only node group - make it local to add ties.')
             return {'CANCELLED'}
         selected = selection_of(tree)
         ties = [t for t in data_read(tree) if t['id'] not in selected]
@@ -2642,6 +2642,7 @@ class TRZ_OT_color(interaction_NodeOperator,bpy.types.Operator):
         tree = bpy.data.node_groups.get(self.tree_name) if self.tree_name else None
         tree = tree or rendering_tree_of(context)
         if not tree or not data_tree_writable(tree):
+            self.report({'WARNING'}, 'TieRZ: linked/read-only node group - make it local to add ties.')
             return {'CANCELLED'}
         ties = data_read(tree)
         for tie in ties:
@@ -3628,6 +3629,7 @@ class TRZ_PT_panel(bpy.types.Panel):
         if not tree:
             quick.label(text=i18n_tr('Open a node tree to start.'),translate=False)
         elif not data_tree_writable(tree):
+            self.report({'WARNING'}, 'TieRZ: linked/read-only node group - make it local to add ties.')
             quick.label(text=i18n_tr('This node tree is read-only.'),icon='LOCKED',translate=False)
 
         box = layout.box()
