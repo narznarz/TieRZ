@@ -8,6 +8,8 @@ TieRZ is a Blender add-on that organizes node links with movable cable ties (rer
 [![English](https://img.shields.io/badge/Language-English-238636?style=for-the-badge&logo=github)](README.md)
 [![한국어](https://img.shields.io/badge/Language-%ED%95%9C%EA%B5%AD%EC%96%B4-21262d?style=for-the-badge&logo=readme)](README.ko.md)
 
+> **Latest change (0.18.55)** — Tie operations now work inside locally authored group nodes. Library-linked read-only groups show a warning; use Make Local to edit them. [Full changelog](CHANGELOG.md)
+
 ---
 
 ## 📸 Before & After

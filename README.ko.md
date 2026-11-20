@@ -8,6 +8,8 @@ TieRZ는 블렌더(Blender)에서 복잡하게 얽힌 노드 링크들을 드래
 [![English](https://img.shields.io/badge/Language-English-21262d?style=for-the-badge&logo=github)](README.md)
 [![한국어](https://img.shields.io/badge/Language-%ED%95%9C%EA%B5%AD%EC%96%B4-238636?style=for-the-badge&logo=readme)](README.ko.md)
 
+> **최신 변경 (0.18.55)** — 직접 만든 그룹 노드 안에서도 타이 기능이 잘 동작합니다. 외부 라이브러리에서 링크한 읽기 전용 그룹 노드는 경고 메시지를 띄웁니다. 편집하려면 Make Local을 쓰세요. [전체 변경 내역](CHANGELOG.md)
+
 ---
 
 ## 📸 Before & After
